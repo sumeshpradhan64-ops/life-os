@@ -6,6 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Life OS">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Sumesh Life OS</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -194,7 +197,7 @@ const GROCERY=[
     {n:"Turmeric, chilli, coriander powder",q:"if running low",dishes:"All dishes",monthly:true},
   ]},
   {cat:"🟢 Essentials",color:"#E8402A",bg:"#FEF0ED",items:[
-    {n:"Nicotine gum 2mg",q:"1 pack",dishes:"NON-NEGOTIABLE — before every craving"},
+    {n:"Stress relief gum",q:"1 pack",dishes:"Keep in pocket at all times"},
   ]},
 ];
 
@@ -257,7 +260,7 @@ const EC={"Food":{i:"🍱",c:"#2A9D5C"},"Transport":{i:"⛽",c:"#D97706"},"Groce
 function getSched(dow){
   const iO=[1,3,5].includes(dow),iW=[2,4].includes(dow),iWE=[0,6].includes(dow);
   const b=[
-    {id:"wake",t:"05:00",l:"Wake Up",i:"⏰",d:"Water + nicotine gum immediately.",a:"#D97706"},
+    {id:"wake",t:"05:00",l:"Wake Up",i:"⏰",d:"Water immediately. Deep breath.",a:"#D97706"},
     {id:"broom",t:"05:05",l:"Brooming — 2BHK",i:"🧹",d:"Full house. 15 minutes.",a:"#0D9488"},
     {id:"walk",t:"05:25",l:`Walk ${iWE?45:30} min`,i:"🚶",d:"No phone. Steady pace.",a:"#2A9D5C"},
     {id:"bath",t:"06:00",l:"Bath",i:"🚿",d:"Quick. 15 minutes.",a:"#2563EB"},
@@ -879,9 +882,9 @@ function rInsights(){
   const late=sched.filter(i=>td().sc[i.id]?.status==='late').length;
   const w=td().sc['wake'];
   let htm=`<div class="card" style="background:${ac}15;border:1.5px solid ${ac}44;text-align:center;padding:24px 16px"><div style="font-size:9px;color:${ac};letter-spacing:3px;font-weight:700;margin-bottom:8px">TODAY'S ALIGNMENT</div><div style="font-size:64px;font-weight:800;color:${ac};line-height:1">${al}%</div><div style="font-size:13px;color:#8A8070;margin-top:8px">${dTasks()} of ${sched.length} tasks · ${late} ran late</div><div style="background:rgba(255,255,255,0.6);border-radius:8px;height:8px;margin-top:12px"><div style="height:8px;border-radius:8px;width:${al}%;background:${ac};transition:width 0.5s"></div></div></div><div class="slbl" style="margin-top:16px">BREAKDOWN</div>`;
-  [{l:'Calories',v:`${tc}`,n:`Target ${TC} · ${Math.max(0,TC-tc)} remaining`,c:tc<=TC?'#2A9D5C':'#E8402A'},{l:'Food Adherence',v:`${fa}%`,n:`${td().food.filter(f=>!f.dev).length} on-plan · ${td().food.filter(f=>f.dev).length} deviated`,c:fa>=80?'#2A9D5C':'#D97706'},{l:'Study',v:`${sm}m`,n:`${sp.s} · target 60min`,c:sm>=60?'#2A9D5C':sm>0?'#D97706':'#E8402A'},{l:'Money Spent',v:`₹${ts}`,n:`Budget ₹${getDailyBudget()}/day`,c:ts<=getDailyBudget()?'#2A9D5C':'#E8402A'},{l:'Cigarettes',v:String(h.cigs),n:'Target ≤ 4 today',c:h.cigs<=4?'#2A9D5C':'#E8402A'},{l:'Nicotine Gum',v:String(h.gum||0),n:'Use before every craving',c:'#0D9488'},{l:'Steps',v:(h.steps||0).toLocaleString(),n:'Target 6,000+',c:(h.steps||0)>=6000?'#2A9D5C':'#D97706'}].forEach(({l,v,n,c})=>{htm+=`<div class="irow"><div><div style="font-size:13px;font-weight:500">${l}</div><div style="font-size:10px;color:#8A8070;margin-top:2px">${n}</div></div><div style="font-size:18px;font-weight:800;color:${c};flex-shrink:0;margin-left:12px">${v}</div></div>`;});
-  const verdict=al>=80&&tc<=TC&&h.cigs<=4?'🌟 Outstanding day. High alignment, calories controlled, smoking on target.':al>=60?`✅ Acceptable. ${late>0?`${late} task(s) late. `:''}${tc>TC?`Calories over by ${tc-TC}. `:''}${h.cigs>4?'Cigs over target. ':''}Tighten tomorrow.`:'⚠️ Below threshold. Something broke. Identify it before sleeping. Reset tomorrow.';
-  htm+=`<div class="card" style="margin-top:16px;background:${al>=60?'#EDF7F2':'#FEF0ED'};border-color:${al>=60?'#2A9D5C':'#E8402A'}44"><div style="font-size:9px;color:${al>=60?'#2A9D5C':'#E8402A'};letter-spacing:2px;font-weight:700;margin-bottom:8px">TODAY'S VERDICT</div><div style="font-size:13px;color:#1A1814;line-height:1.8">${verdict}</div></div><div class="card" style="margin-top:10px;background:#EFF6FF;border-color:#2563EB44"><div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">📋 NIGHTLY REPORT — COPY + SEND</div><div class="rbox">Wake:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${w?.time||'___'}<br>Walk:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${td().sc['walk']?'Y ✓':'N'}<br>Breakfast:&nbsp;${td().sc['bfast']?'Y ✓':'N'}<br>Study:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${sm>0?`Y · ${sp.s} · ${sm}min`:'N'}<br>Cigs:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${h.cigs}<br>Gum:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${h.gum||0} pieces<br>Calories:&nbsp;&nbsp;${tc}<br>Spent:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹${ts}<br>Steps:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${(h.steps||0).toLocaleString()}<br>Alignment:&nbsp;${al}%</div></div>`;
+  [{l:'Calories',v:`${tc}`,n:`Target ${TC} · ${Math.max(0,TC-tc)} remaining`,c:tc<=TC?'#2A9D5C':'#E8402A'},{l:'Food Adherence',v:`${fa}%`,n:`${td().food.filter(f=>!f.dev).length} on-plan · ${td().food.filter(f=>f.dev).length} deviated`,c:fa>=80?'#2A9D5C':'#D97706'},{l:'Study',v:`${sm}m`,n:`${sp.s} · target 60min`,c:sm>=60?'#2A9D5C':sm>0?'#D97706':'#E8402A'},{l:'Money Spent',v:`₹${ts}`,n:`Budget ₹${getDailyBudget()}/day`,c:ts<=getDailyBudget()?'#2A9D5C':'#E8402A'},{l:'Steps',v:(h.steps||0).toLocaleString(),n:'Target 6,000+',c:(h.steps||0)>=6000?'#2A9D5C':'#D97706'}].forEach(({l,v,n,c})=>{htm+=`<div class="irow"><div><div style="font-size:13px;font-weight:500">${l}</div><div style="font-size:10px;color:#8A8070;margin-top:2px">${n}</div></div><div style="font-size:18px;font-weight:800;color:${c};flex-shrink:0;margin-left:12px">${v}</div></div>`;});
+  const verdict=al>=80&&tc<=TC?'🌟 Outstanding day. High alignment, calories controlled, smoking on target.':al>=60?`✅ Acceptable. ${late>0?`${late} task(s) late. `:''}${tc>TC?`Calories over by ${tc-TC}. `:''}Tighten tomorrow.`:'⚠️ Below threshold. Something broke. Identify it before sleeping. Reset tomorrow.';
+  htm+=`<div class="card" style="margin-top:16px;background:${al>=60?'#EDF7F2':'#FEF0ED'};border-color:${al>=60?'#2A9D5C':'#E8402A'}44"><div style="font-size:9px;color:${al>=60?'#2A9D5C':'#E8402A'};letter-spacing:2px;font-weight:700;margin-bottom:8px">TODAY'S VERDICT</div><div style="font-size:13px;color:#1A1814;line-height:1.8">${verdict}</div></div><div class="card" style="margin-top:10px;background:#EFF6FF;border-color:#2563EB44"><div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">📋 NIGHTLY REPORT — COPY + SEND</div><div class="rbox">Wake:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${w?.time||'___'}<br>Walk:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${td().sc['walk']?'Y ✓':'N'}<br>Breakfast:&nbsp;${td().sc['bfast']?'Y ✓':'N'}<br>Study:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${sm>0?`Y · ${sp.s} · ${sm}min`:'N'}<br>Calories:&nbsp;&nbsp;${tc}<br>Spent:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹${ts}<br>Steps:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${(h.steps||0).toLocaleString()}<br>Alignment:&nbsp;${al}%</div></div>`;
   el.innerHTML=htm;
 }
 
@@ -1035,7 +1038,7 @@ function getSpecialDay(){
 function getSpecialSched(){
   const type=getSpecialDay();
   const base=[
-    {id:"wake",t:"05:00",l:"Wake Up",i:"⏰",d:"Water + nicotine gum.",a:"#D97706"},
+    {id:"wake",t:"05:00",l:"Wake Up",i:"⏰",d:"Water immediately.",a:"#D97706"},
     {id:"prayer",t:"06:00",l:"Prayer",i:"🙏",d:"10 minutes.",a:"#7C3AED"},
     {id:"walk",t:"06:15",l:"Walk if possible",i:"🚶",d:"Even 15 minutes counts.",a:"#2A9D5C"},
   ];
