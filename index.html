@@ -118,6 +118,7 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
     <button class="tab" onclick="showTab('insights')">✨ Insights</button>
     <button class="tab" onclick="showTab('grocery')">🛒 Grocery</button>
     <button class="tab" onclick="showTab('reports')">📈 Reports</button>
+    <button class="tab" onclick="showTab('settings')">⚙️ Settings</button>
   </div>
 </div>
 <div class="content">
@@ -129,11 +130,12 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
   <div id="tab-insights" class="hidden"></div>
   <div id="tab-grocery" class="hidden"></div>
   <div id="tab-reports" class="hidden"></div>
+  <div id="tab-settings" class="hidden"></div>
 </div>
 <div class="bbar"><div style="font-size:9px;color:var(--faint);letter-spacing:2px" id="bDate"></div></div>
 
 <script>
-const SK="sumesh_v9",TC=1700,DB=107;
+const SK="sumesh_permanent",TC=1700,DB=107;
 const QT=["Every small step counts. 🌱","You showed up. That's already winning. 💪","Discipline is freedom. Keep going. 🔥","One day at a time. You've got this. ☀️","Progress over perfection. Always. ✨","Your future self is watching. Make them proud. 🎯","Small habits. Big life. 🌟"];
 const DNS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const DSH=["SUN","MON","TUE","WED","THU","FRI","SAT"];
@@ -282,6 +284,7 @@ function load(){
   if(!D[k])D[k]={sc:{},food:[],study:[],h:{cigs:0,gum:0,steps:0,wt:98},fin:[],unp:[]};
   gData();
   mData();
+  getSettings();
   // Set June budget
   const mk='monthbudget_'+monthKey();
   if(!D[mk])D[mk]={daily:61};
@@ -326,8 +329,8 @@ function uHdr(){
 
 function showTab(n){
   curTab=n;
-  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['today','food','study','health','finance','insights','grocery','reports'][i]===n);});
-  ['today','food','study','health','finance','insights','grocery','reports'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==n);});
+  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['today','food','study','health','finance','insights','grocery','reports','settings'][i]===n);});
+  ['today','food','study','health','finance','insights','grocery','reports','settings'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==n);});
   render(n);
 }
 function render(n){
@@ -339,6 +342,7 @@ function render(n){
   else if(n==='insights')rInsights();
   else if(n==='grocery')rGrocery();
   else if(n==='reports')rReports();
+  else if(n==='settings')rSettings();
   uHdr();
 }
 
@@ -417,10 +421,29 @@ function getNudgeMsg(current,next,overdue){
 
 function rToday(){
   const el=document.getElementById('tab-today');
+  // Check special day — override schedule if needed
+  const spDay=getSpecialDay();
+  const activeSched=spDay?getSpecialSched():sched;
+
   const {current,next,overdue}=getLiveNudge();
   const {msg,color,bg,urgent}=getNudgeMsg(current,next,overdue);
 
   let h='';
+
+  // Special day banner
+  if(spDay){
+    const spColors={Travel:'#2563EB',Sick:'#E8402A',Holiday:'#2A9D5C','Family Visit':'#7C3AED'};
+    const spBgs={Travel:'#EFF6FF',Sick:'#FEF0ED',Holiday:'#EDF7F2','Family Visit':'#F5F3FF'};
+    const spIcons={Travel:'🚆',Sick:'🤒',Holiday:'🌴','Family Visit':'🏠'};
+    h+=`<div style="background:${spBgs[spDay]||'#FFFBEB'};border-radius:12px;padding:12px 16px;margin-bottom:10px;border:1.5px solid ${spColors[spDay]||'#D97706'}44;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:9px;color:${spColors[spDay]||'#D97706'};letter-spacing:2px;font-weight:700">${spIcons[spDay]||'⚡'} SPECIAL DAY</div>
+        <div style="font-size:14px;font-weight:700;color:${spColors[spDay]||'#D97706'};margin-top:2px">${spDay} Day — Reduced schedule active</div>
+        <div style="font-size:10px;color:#8A8070;margin-top:2px">Reports will mark this separately. Score not penalised heavily.</div>
+      </div>
+      <button onclick="clearSpecialDay()" style="background:#fff;border:1.5px solid #EDE9E0;border-radius:8px;color:#8A8070;padding:6px 10px;font-size:10px;cursor:pointer;font-family:inherit;-webkit-appearance:none">Clear</button>
+    </div>`;
+  }
 
   // Live nudge banner
   if(msg){
@@ -551,6 +574,8 @@ function uW(d){const h=td().h;h.wt=parseFloat(((h.wt||98)+d).toFixed(1));save();
 
 // Finance helpers
 function getDailyBudget(){
+  const s=getSettings();
+  if(s&&s.dailybudget) return s.dailybudget;
   const mk2='monthbudget_'+monthKey();
   const mb=D[mk2];
   if(mb&&mb.daily) return mb.daily;
@@ -920,6 +945,179 @@ function rReports(){
   }
 
   el.innerHTML=h;
+}
+
+
+// ── SETTINGS HELPERS ─────────────────────────────────────────────────────────
+function getSettings(){
+  if(!D['settings'])D['settings']={
+    officedays:[1,3,5],
+    wfhdays:[2,4],
+    mbadays:[6,0],
+    mbastarttime:'09:00',
+    sapdaysoffice:[1,3,5],
+    sapdayswfh:[2,4],
+    dailybudget:61,
+    specialday:null, // {type, date}
+  };
+  return D['settings'];
+}
+function saveSettings(){save();}
+
+function getSpecialDay(){
+  const s=getSettings();
+  const today=tKey();
+  if(s.specialday&&s.specialday.date===today) return s.specialday.type;
+  return null;
+}
+
+function getSpecialSched(){
+  const type=getSpecialDay();
+  const base=[
+    {id:"wake",t:"05:00",l:"Wake Up",i:"⏰",d:"Water + nicotine gum.",a:"#D97706"},
+    {id:"prayer",t:"06:00",l:"Prayer",i:"🙏",d:"10 minutes.",a:"#7C3AED"},
+    {id:"walk",t:"06:15",l:"Walk if possible",i:"🚶",d:"Even 15 minutes counts.",a:"#2A9D5C"},
+  ];
+  if(type==='Travel'){
+    return [...base,
+      {id:"travel",t:"07:00",l:"Travel Day",i:"🚆",d:"Stay hydrated. Avoid junk food.",a:"#2563EB"},
+      {id:"study",t:"10:00",l:"Study on train/flight",i:"📚",d:"Trainer video or MBA reading. Use the time.",a:"#7C3AED"},
+      {id:"sleep",t:"22:00",l:"Lights Out",i:"🌙",d:"Rest well after travel.",a:"#8A8070"},
+    ];
+  } else if(type==='Sick'){
+    return [...base,
+      {id:"rest",t:"08:00",l:"Rest — Sick Day",i:"🤒",d:"No pressure. Rest and recover.",a:"#E8402A"},
+      {id:"meds",t:"09:00",l:"Medicines / Fluids",i:"💊",d:"Stay hydrated. Take medicines on time.",a:"#E8402A"},
+      {id:"sleep",t:"21:00",l:"Early Sleep",i:"🌙",d:"Extra rest needed.",a:"#8A8070"},
+    ];
+  } else if(type==='Holiday'||type==='Family Visit'){
+    return [...base,
+      {id:"family",t:"09:00",l:"Family / Holiday Time",i:"🏠",d:"Enjoy. No guilt.",a:"#2A9D5C"},
+      {id:"study",t:"17:00",l:"Study — 1 hour",i:"📚",d:"Even on holidays. 1 hour minimum.",a:"#7C3AED"},
+      {id:"sleep",t:"22:30",l:"Lights Out",i:"🌙",d:"Slightly relaxed tonight.",a:"#8A8070"},
+    ];
+  }
+  return base;
+}
+
+function rSettings(){
+  const el=document.getElementById('tab-settings');
+  const s=getSettings();
+  const sp=getSpecialDay();
+  const dayNames2=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  let h=`<div class="slbl">SCHEDULE SETTINGS</div>
+
+  <!-- Special Day Mode -->
+  <div class="card" style="background:${sp?'#FFF7ED':'#fff'};border-color:${sp?'#EA580C44':'#EDE9E0'}">
+    <div style="font-size:9px;color:#EA580C;letter-spacing:2px;font-weight:700;margin-bottom:10px">⚡ TODAY'S SPECIAL MODE</div>
+    ${sp
+      ?`<div style="font-size:16px;font-weight:700;color:#EA580C;margin-bottom:12px">${sp} Day Active</div>
+        <button class="bp" style="background:#E8402A;width:100%" onclick="clearSpecialDay()">CLEAR SPECIAL MODE</button>`
+      :`<div style="font-size:12px;color:#8A8070;margin-bottom:12px">Normal schedule today. Activate if today is different.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="bp" style="background:#2563EB" onclick="setSpecialDay('Travel')">🚆 Travel</button>
+          <button class="bp" style="background:#E8402A" onclick="setSpecialDay('Sick')">🤒 Sick</button>
+          <button class="bp" style="background:#2A9D5C" onclick="setSpecialDay('Holiday')">🌴 Holiday</button>
+          <button class="bp" style="background:#7C3AED" onclick="setSpecialDay('Family Visit')">🏠 Family Visit</button>
+        </div>`
+    }
+  </div>
+
+  <!-- Office vs WFH Days -->
+  <div class="card">
+    <div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">🏢 OFFICE DAYS</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+      ${[0,1,2,3,4,5,6].map(d=>{
+        const isOffice=s.officedays.includes(d);
+        return `<button onclick="toggleOfficeDay(${d})" style="padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;-webkit-appearance:none;background:${isOffice?'#2563EB':'#EDE9E0'};color:${isOffice?'#fff':'#8A8070'}">${dayNames2[d]}</button>`;
+      }).join('')}
+    </div>
+    <div style="font-size:10px;color:#8A8070">Tap to toggle. Remaining days = WFH or Weekend.</div>
+  </div>
+
+  <!-- MBA Class Schedule -->
+  <div class="card">
+    <div style="font-size:9px;color:#7C3AED;letter-spacing:2px;font-weight:700;margin-bottom:10px">📚 MBA LIVE CLASS DAYS</div>
+    <div style="font-size:11px;color:#8A8070;margin-bottom:10px">When your Manipal classes start, set the days here.</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      ${[0,1,2,3,4,5,6].map(d=>{
+        const isMBA=s.mbadays.includes(d);
+        return `<button onclick="toggleMBADay(${d})" style="padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;-webkit-appearance:none;background:${isMBA?'#7C3AED':'#EDE9E0'};color:${isMBA?'#fff':'#8A8070'}">${dayNames2[d]}</button>`;
+      }).join('')}
+    </div>
+    <div style="font-size:9px;color:#C5BFB0;letter-spacing:1px;margin-bottom:6px">CLASS START TIME</div>
+    <input type="time" value="${s.mbastarttime}" onchange="updateMBATime(this.value)" style="margin-bottom:0">
+  </div>
+
+  <!-- Daily Budget -->
+  <div class="card">
+    <div style="font-size:9px;color:#2A9D5C;letter-spacing:2px;font-weight:700;margin-bottom:10px">💰 DAILY CASH BUDGET</div>
+    <div style="font-size:11px;color:#8A8070;margin-bottom:10px">Update at start of each month based on your expenses.</div>
+    <input type="number" value="${s.dailybudget}" onchange="updateBudget(this.value)" placeholder="e.g. 107">
+    <div style="font-size:10px;color:#8A8070;margin-top:6px">Current: ₹${s.dailybudget}/day</div>
+  </div>
+
+  <!-- Info -->
+  <div style="background:#EDF7F2;border-radius:10px;padding:12px 14px;margin-top:4px">
+    <div style="font-size:10px;color:#2A9D5C;font-weight:700;margin-bottom:4px">✅ DATA IS SAFE</div>
+    <div style="font-size:11px;color:#8A8070;line-height:1.6">All settings changes only affect future days. Your past logs, reports and history are never changed.</div>
+  </div>`;
+
+  el.innerHTML=h;
+}
+
+function setSpecialDay(type){
+  const s=getSettings();
+  s.specialday={type,date:tKey()};
+  saveSettings();
+  rSettings();
+  // Also refresh today tab
+  if(curTab==='today') rToday();
+}
+
+function clearSpecialDay(){
+  const s=getSettings();
+  s.specialday=null;
+  saveSettings();
+  rSettings();
+  if(curTab==='today') rToday();
+}
+
+function toggleOfficeDay(d){
+  const s=getSettings();
+  const idx=s.officedays.indexOf(d);
+  if(idx>=0) s.officedays.splice(idx,1);
+  else s.officedays.push(d);
+  // WFH = non-office, non-weekend (Sat/Sun)
+  s.wfhdays=[0,1,2,3,4,5,6].filter(x=>!s.officedays.includes(x)&&x!==0&&x!==6);
+  saveSettings();
+  rSettings();
+}
+
+function toggleMBADay(d){
+  const s=getSettings();
+  const idx=s.mbadays.indexOf(d);
+  if(idx>=0) s.mbadays.splice(idx,1);
+  else s.mbadays.push(d);
+  saveSettings();
+  rSettings();
+}
+
+function updateMBATime(val){
+  const s=getSettings();
+  s.mbastarttime=val;
+  saveSettings();
+}
+
+function updateBudget(val){
+  const s=getSettings();
+  s.dailybudget=parseInt(val)||107;
+  // Also update monthbudget
+  const mk2='monthbudget_'+monthKey();
+  if(!D[mk2])D[mk2]={};
+  D[mk2].daily=s.dailybudget;
+  saveSettings();
 }
 
 load();rToday();uHdr();
