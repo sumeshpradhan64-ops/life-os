@@ -117,6 +117,7 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
     <button class="tab" onclick="showTab('finance')">💰 Finance</button>
     <button class="tab" onclick="showTab('insights')">✨ Insights</button>
     <button class="tab" onclick="showTab('grocery')">🛒 Grocery</button>
+    <button class="tab" onclick="showTab('reports')">📈 Reports</button>
   </div>
 </div>
 <div class="content">
@@ -127,6 +128,7 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
   <div id="tab-finance" class="hidden"></div>
   <div id="tab-insights" class="hidden"></div>
   <div id="tab-grocery" class="hidden"></div>
+  <div id="tab-reports" class="hidden"></div>
 </div>
 <div class="bbar"><div style="font-size:9px;color:var(--faint);letter-spacing:2px" id="bDate"></div></div>
 
@@ -248,7 +250,7 @@ function getSched(dow){
     {id:"sleep",t:"22:15",l:"Lights Out",i:"🌙",d:"Phone away. Sleep.",a:"#8A8070"}
   );
   else b.push(
-    {id:"mop",t:"08:15",l:"Mopping (Sat only)",i:"🧹",d:"Full 2BHK. Every Saturday.",a:"#0D9488"},
+    ...(dow===6?[{id:"mop",t:"08:15",l:"Mopping — Full 2BHK",i:"🧹",d:"Every Saturday. Skipped on Sunday.",a:"#0D9488"}]:[]),
     {id:"st1",t:"09:00",l:"MBA Study (2 hrs)",i:"📚",d:"Sat = Live. Sun = Revision.",a:"#7C3AED"},
     {id:"lunch",t:"11:30",l:"Lunch",i:"🍽️",d:"Proper meal. Sit and eat.",a:"#EA580C"},
     {id:"free",t:"12:30",l:"Free Time 🎉",i:"😌",d:"Movie, series, calls. Until 3:30 PM.",a:"#2A9D5C"},
@@ -291,7 +293,11 @@ function tSpent(){return td().fin.reduce((s,e)=>s+e.amt,0);}
 function dTasks(){return sched.filter(i=>td().sc[i.id]).length;}
 function sMins(){return td().study.reduce((s,x)=>s+x.mins,0);}
 function fAdh(){const f=td().food;if(!f.length)return 0;return Math.round(f.filter(x=>!x.dev).length/f.length*100);}
-function align(){return Math.round(dTasks()/sched.length*100);}
+function align(){
+  const done=sched.filter(i=>td().sc[i.id]&&td().sc[i.id].status!=='skipped').length;
+  const skipped=sched.filter(i=>td().sc[i.id]?.status==='skipped').length;
+  return Math.round((done+(skipped*0.5))/sched.length*100);
+}
 function gTotal(){const gd=gData();return Object.values(gd.prices).reduce((s,v)=>s+(parseFloat(v)||0),0);}
 function gChecked(){return Object.values(gData().checks).filter(Boolean).length;}
 function gAll(){return GROCERY.reduce((s,c)=>s+c.items.length,0);}
@@ -320,8 +326,8 @@ function uHdr(){
 
 function showTab(n){
   curTab=n;
-  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['today','food','study','health','finance','insights','grocery'][i]===n);});
-  ['today','food','study','health','finance','insights','grocery'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==n);});
+  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['today','food','study','health','finance','insights','grocery','reports'][i]===n);});
+  ['today','food','study','health','finance','insights','grocery','reports'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==n);});
   render(n);
 }
 function render(n){
@@ -332,6 +338,7 @@ function render(n){
   else if(n==='finance')rFinance();
   else if(n==='insights')rInsights();
   else if(n==='grocery')rGrocery();
+  else if(n==='reports')rReports();
   uHdr();
 }
 
@@ -438,9 +445,10 @@ function rToday(){
   h+=`<div class="slbl">SCHEDULE — TAP LOG TO RECORD</div>`;
   sched.forEach(item=>{
     const lg=td().sc[item.id],late=lg?.status==='late';
-    const cls='si'+(lg?(late?' late':' ok'):'');
-    const tc=lg?(late?'#D97706':'#2A9D5C'):'#C5BFB0';
-    const tl=lg?(late?`⏱ LATE ${lg.time}`:`✓ ${lg.time}`):`by ${item.t}`;
+    const skipped=lg?.status==='skipped';
+    const cls='si'+(lg?(late?' late':(skipped?' late':' ok')):'');
+    const tc=lg?(late?'#D97706':(skipped?'#8A8070':'#2A9D5C')):'#C5BFB0';
+    const tl=lg?(late?`⏱ LATE ${lg.time}`:(skipped?`⊘ SKIPPED ${lg.time}`:`✓ ${lg.time}`)):`by ${item.t}`;
     h+=`<div class="${cls}"><div class="si-icon">${item.i}</div><div class="si-body"><div class="si-row"><div class="si-lbl${lg?' done':''}">${item.l}</div><div class="si-t" style="color:${tc}">${tl}</div></div><div class="si-d">${item.d}</div>${lg&&lg.note?`<div class="si-n">"${lg.note}"</div>`:''}${!lg?`<button class="lbtn" style="background:${item.a}" onclick="toggleLog('${item.id}')">LOG</button>`:''}</div></div>`;
     if(!lg&&openLogId===item.id){
       h+=`<div class="iform"><div style="font-size:9px;color:${item.a};letter-spacing:2px;font-weight:700;margin-bottom:10px">LOGGING — ${item.l.toUpperCase()}</div><label class="flbl">ACTUAL TIME (change if logging late)</label><input type="time" id="lt_${item.id}" value="${now()}" style="margin-bottom:6px"><div class="time-note">Default is now. Change to actual time if needed.</div><label class="flbl" style="margin-top:10px">NOTE (optional)</label><input type="text" id="ln_${item.id}" placeholder="e.g. Ran late, skipped..."><div class="brow"><button class="bp" style="background:#2A9D5C" onclick="confirmLog('${item.id}')">CONFIRM ✓</button><button class="bs" onclick="cancelLog()">CANCEL</button></div></div>`;
@@ -458,11 +466,18 @@ function rToday(){
 }
 function toggleLog(id){openLogId=openLogId===id?null:id;rToday();}
 function cancelLog(){openLogId=null;rToday();}
-function confirmLog(id){
+function confirmLog(id,skipped=false){
   const timeVal=document.getElementById('lt_'+id)?.value||now();
   const note=document.getElementById('ln_'+id)?.value||'';
   const item=sched.find(i=>i.id===id);
-  td().sc[id]={time:timeVal,note,status:timeVal<=item.t?'on-time':'late'};
+  // 15 minute buffer — within 15 mins of scheduled = on time
+  const [sh,sm]=item.t.split(':').map(Number);
+  const [lh,lm]=timeVal.split(':').map(Number);
+  const schedMins=sh*60+sm;
+  const logMins=lh*60+lm;
+  const diff=logMins-schedMins;
+  const status=skipped?'skipped':diff<=15?'on-time':'late';
+  td().sc[id]={time:timeVal,note,status};
   save();openLogId=null;rToday();uHdr();
 }
 function logUnplan(){
@@ -777,6 +792,134 @@ function rInsights(){
   const verdict=al>=80&&tc<=TC&&h.cigs<=4?'🌟 Outstanding day. High alignment, calories controlled, smoking on target.':al>=60?`✅ Acceptable. ${late>0?`${late} task(s) late. `:''}${tc>TC?`Calories over by ${tc-TC}. `:''}${h.cigs>4?'Cigs over target. ':''}Tighten tomorrow.`:'⚠️ Below threshold. Something broke. Identify it before sleeping. Reset tomorrow.';
   htm+=`<div class="card" style="margin-top:16px;background:${al>=60?'#EDF7F2':'#FEF0ED'};border-color:${al>=60?'#2A9D5C':'#E8402A'}44"><div style="font-size:9px;color:${al>=60?'#2A9D5C':'#E8402A'};letter-spacing:2px;font-weight:700;margin-bottom:8px">TODAY'S VERDICT</div><div style="font-size:13px;color:#1A1814;line-height:1.8">${verdict}</div></div><div class="card" style="margin-top:10px;background:#EFF6FF;border-color:#2563EB44"><div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">📋 NIGHTLY REPORT — COPY + SEND</div><div class="rbox">Wake:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${w?.time||'___'}<br>Walk:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${td().sc['walk']?'Y ✓':'N'}<br>Breakfast:&nbsp;${td().sc['bfast']?'Y ✓':'N'}<br>Study:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${sm>0?`Y · ${sp.s} · ${sm}min`:'N'}<br>Cigs:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${h.cigs}<br>Gum:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${h.gum||0} pieces<br>Calories:&nbsp;&nbsp;${tc}<br>Spent:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹${ts}<br>Steps:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${(h.steps||0).toLocaleString()}<br>Alignment:&nbsp;${al}%</div></div>`;
   el.innerHTML=htm;
+}
+
+
+// REPORTS
+function rReports(){
+  const el=document.getElementById('tab-reports');
+  // Gather last 7 days data
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const dd=D[key];
+    if(dd){
+      const dow2=d.getDay();
+      const sc2=getSched(dow2);
+      const done=sc2.filter(s=>dd.sc[s.id]&&dd.sc[s.id].status!=='skipped').length;
+      const skipped=sc2.filter(s=>dd.sc[s.id]?.status==='skipped').length;
+      const al=Math.round((done+(skipped*0.5))/sc2.length*100);
+      const cal=dd.food.reduce((s,f)=>s+f.cal,0);
+      const spent=dd.fin.reduce((s,e)=>s+e.amt,0);
+      const sm=dd.study.reduce((s,x)=>s+x.mins,0);
+      const cigs=dd.h?.cigs||0;
+      const wt=dd.h?.wt||0;
+      days.push({date:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}),dow:dow2,al,cal,spent,sm,cigs,wt,key});
+    }
+  }
+
+  const avgAl=days.length?Math.round(days.reduce((s,d)=>s+d.al,0)/days.length):0;
+  const avgCal=days.length?Math.round(days.reduce((s,d)=>s+d.cal,0)/days.length):0;
+  const avgCigs=days.length?Math.round(days.reduce((s,d)=>s+d.cigs,0)/days.length*10)/10:0;
+  const totalStudy=days.reduce((s,d)=>s+d.sm,0);
+  const totalSpent=days.reduce((s,d)=>s+d.spent,0);
+  const bestDay=days.length?days.reduce((a,b)=>a.al>b.al?a:b):null;
+  const worstDay=days.length?days.reduce((a,b)=>a.al<b.al?a:b):null;
+
+  const acAl=avgAl>=80?'#2A9D5C':avgAl>=60?'#D97706':'#E8402A';
+
+  let h=`<div class="slbl">WEEKLY SUMMARY</div>
+  <div class="card" style="background:${acAl}15;border:1.5px solid ${acAl}44;text-align:center;padding:20px 16px;margin-bottom:10px">
+    <div style="font-size:9px;color:${acAl};letter-spacing:3px;font-weight:700;margin-bottom:6px">7-DAY AVERAGE ALIGNMENT</div>
+    <div style="font-size:56px;font-weight:800;color:${acAl};line-height:1">${avgAl}%</div>
+    <div style="font-size:11px;color:#8A8070;margin-top:6px">Based on ${days.length} days of data</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <div class="card" style="text-align:center;padding:12px">
+      <div style="font-size:9px;color:#7C3AED;letter-spacing:2px;font-weight:700">STUDY</div>
+      <div style="font-size:24px;font-weight:800;color:#7C3AED">${totalStudy}m</div>
+      <div style="font-size:9px;color:#8A8070">this week</div>
+    </div>
+    <div class="card" style="text-align:center;padding:12px">
+      <div style="font-size:9px;color:#E8402A;letter-spacing:2px;font-weight:700">AVG CIGS</div>
+      <div style="font-size:24px;font-weight:800;color:${avgCigs<=4?'#2A9D5C':'#E8402A'}">${avgCigs}</div>
+      <div style="font-size:9px;color:#8A8070">per day</div>
+    </div>
+    <div class="card" style="text-align:center;padding:12px">
+      <div style="font-size:9px;color:#D97706;letter-spacing:2px;font-weight:700">AVG CAL</div>
+      <div style="font-size:24px;font-weight:800;color:${avgCal<=1700?'#2A9D5C':'#E8402A'}">${avgCal}</div>
+      <div style="font-size:9px;color:#8A8070">per day</div>
+    </div>
+    <div class="card" style="text-align:center;padding:12px">
+      <div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700">SPENT</div>
+      <div style="font-size:24px;font-weight:800;color:#2563EB">₹${totalSpent}</div>
+      <div style="font-size:9px;color:#8A8070">this week</div>
+    </div>
+  </div>
+
+  ${bestDay?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <div class="card" style="background:#EDF7F2;border-color:#2A9D5C44;padding:12px">
+      <div style="font-size:9px;color:#2A9D5C;letter-spacing:2px;font-weight:700">BEST DAY</div>
+      <div style="font-size:18px;font-weight:800;color:#2A9D5C">${bestDay.date}</div>
+      <div style="font-size:13px;color:#2A9D5C;font-weight:700">${bestDay.al}% aligned</div>
+    </div>
+    <div class="card" style="background:#FEF0ED;border-color:#E8402A44;padding:12px">
+      <div style="font-size:9px;color:#E8402A;letter-spacing:2px;font-weight:700">NEEDS WORK</div>
+      <div style="font-size:18px;font-weight:800;color:#E8402A">${worstDay.date}</div>
+      <div style="font-size:13px;color:#E8402A;font-weight:700">${worstDay.al}% aligned</div>
+    </div>
+  </div>`:''}
+
+  <div class="slbl" style="margin-top:6px">DAILY BREAKDOWN</div>`;
+
+  // Daily bars
+  days.forEach(d=>{
+    const ac2=d.al>=80?'#2A9D5C':d.al>=60?'#D97706':'#E8402A';
+    h+=`<div class="card" style="padding:12px 14px;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:700">${d.date}</div>
+        <div style="font-size:13px;font-weight:800;color:${ac2}">${d.al}%</div>
+      </div>
+      <div style="background:#EDE9E0;border-radius:4px;height:6px;margin-bottom:8px">
+        <div style="height:6px;border-radius:4px;width:${d.al}%;background:${ac2}"></div>
+      </div>
+      <div style="display:flex;gap:12px;font-size:10px;color:#8A8070">
+        <span>📚 ${d.sm}m</span>
+        <span>🔥 ${d.cigs} cigs</span>
+        <span>🍽️ ${d.cal} cal</span>
+        <span>💰 ₹${d.spent}</span>
+      </div>
+    </div>`;
+  });
+
+  if(days.length===0){
+    h+=`<div class="card" style="text-align:center;padding:24px;color:#8A8070">
+      <div style="font-size:32px;margin-bottom:10px">📊</div>
+      <div style="font-size:13px">No data yet.</div>
+      <div style="font-size:11px;margin-top:6px">Start logging daily and reports will appear here.</div>
+    </div>`;
+  }
+
+  // Weight trend if available
+  const weights=days.filter(d=>d.wt>0);
+  if(weights.length>=2){
+    const first=weights[0].wt,last=weights[weights.length-1].wt;
+    const diff=(last-first).toFixed(1);
+    const lost=diff<0;
+    h+=`<div class="card" style="background:${lost?'#EDF7F2':'#FEF0ED'};border-color:${lost?'#2A9D5C':'#E8402A'}44;margin-top:6px">
+      <div style="font-size:9px;color:${lost?'#2A9D5C':'#E8402A'};letter-spacing:2px;font-weight:700;margin-bottom:6px">WEIGHT THIS WEEK</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:11px;color:#8A8070">Start</div><div style="font-size:18px;font-weight:700">${first} kg</div></div>
+        <div style="font-size:24px">${lost?'📉':'📈'}</div>
+        <div style="text-align:right"><div style="font-size:11px;color:#8A8070">Now</div><div style="font-size:18px;font-weight:700">${last} kg</div></div>
+      </div>
+      <div style="text-align:center;margin-top:8px;font-size:13px;font-weight:700;color:${lost?'#2A9D5C':'#E8402A'}">${lost?'Lost':'Gained'} ${Math.abs(diff)} kg this week</div>
+    </div>`;
+  }
+
+  el.innerHTML=h;
 }
 
 load();rToday();uHdr();
