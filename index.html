@@ -131,7 +131,7 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
 <div class="bbar"><div style="font-size:9px;color:var(--faint);letter-spacing:2px" id="bDate"></div></div>
 
 <script>
-const SK="sumesh_v8",TC=1700;
+const SK="sumesh_v9",TC=1700;
 const QT=["Every small step counts. 🌱","You showed up. That's already winning. 💪","Discipline is freedom. Keep going. 🔥","One day at a time. You've got this. ☀️","Progress over perfection. Always. ✨","Your future self is watching. Make them proud. 🎯","Small habits. Big life. 🌟"];
 const DNS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const DSH=["SUN","MON","TUE","WED","THU","FRI","SAT"];
@@ -335,9 +335,107 @@ function render(n){
   uHdr();
 }
 
+
+// LIVE NUDGE — what should you be doing right now
+function getLiveNudge(){
+  const t=now();
+  const h=parseInt(t.split(':')[0]),m=parseInt(t.split(':')[1]);
+  const mins=h*60+m;
+
+  // Find current scheduled task
+  let current=null,next=null,overdue=[];
+  for(let i=0;i<sched.length;i++){
+    const item=sched[i];
+    const it=item.t;
+    const ih=parseInt(it.split(':')[0]),im=parseInt(it.split(':')[1]);
+    const imins=ih*60+im;
+    const logged=td().sc[item.id];
+
+    // Check overdue — scheduled more than 15 min ago and not logged
+    if(!logged && imins+15 < mins && item.id!=='sleep'){
+      overdue.push(item);
+    }
+
+    // Find what should be happening now
+    if(imins<=mins){
+      current=item;
+    } else if(!next){
+      next=item;
+    }
+  }
+  return {current,next,overdue};
+}
+
+function getNudgeMsg(current,next,overdue){
+  const t=now();
+  const h=parseInt(t.split(':')[0]),m=parseInt(t.split(':')[1]);
+  const mins=h*60+m;
+
+  let msg='',color='#2A9D5C',bg='#EDF7F2',urgent=false;
+
+  if(current){
+    const logged=td().sc[current.id];
+    if(!logged){
+      // Should be doing this right now
+      msg=`🔴 RIGHT NOW: ${current.l} — scheduled at ${current.t}. Not done yet.`;
+      color='#E8402A';bg='#FEF0ED';urgent=true;
+    } else {
+      // Current task done, next coming up
+      if(next){
+        const nt=next.t;
+        const nh=parseInt(nt.split(':')[0]),nm=parseInt(nt.split(':')[1]);
+        const nmins=nh*60+nm;
+        const diff=nmins-mins;
+        if(diff<=15){
+          msg=`⏰ COMING UP IN ${diff} MIN: ${next.l} — be ready.`;
+          color='#D97706';bg='#FFFBEB';
+        } else {
+          msg=`✅ On track. Next: ${next.l} at ${next.t}`;
+          color='#2A9D5C';bg='#EDF7F2';
+        }
+      } else {
+        msg='✅ All scheduled tasks done. Great day.';
+        color='#2A9D5C';bg='#EDF7F2';
+      }
+    }
+  }
+
+  // Special time-based messages
+  const h2=parseInt(t.split(':')[0]);
+  if(h2>=22){msg='🌙 You should be sleeping. Lights out was 10:15 PM.';color='#8A8070';bg='#F7F5F0';}
+  else if(h2>=21&&h2<22){msg='📞 Family calls window. Max 30 min. Sleep at 10:15 PM.';color='#7C3AED';bg='#F5F3FF';}
+
+  return {msg,color,bg,urgent,overdue};
+}
+
 function rToday(){
   const el=document.getElementById('tab-today');
-  let h=`<div class="slbl">SCHEDULE — TAP LOG TO RECORD</div>`;
+  const {current,next,overdue}=getLiveNudge();
+  const {msg,color,bg,urgent}=getNudgeMsg(current,next,overdue);
+
+  let h='';
+
+  // Live nudge banner
+  if(msg){
+    h+=`<div style="background:${bg};border-radius:12px;padding:14px 16px;margin-bottom:12px;border:1.5px solid ${color}44">
+      <div style="font-size:13px;font-weight:700;color:${color};line-height:1.5">${msg}</div>
+    </div>`;
+  }
+
+  // Overdue warnings
+  if(overdue.length>0){
+    h+=`<div style="background:#FEF0ED;border-radius:12px;padding:12px 16px;margin-bottom:12px;border:1.5px solid #E8402A44">
+      <div style="font-size:9px;color:#E8402A;letter-spacing:2px;font-weight:700;margin-bottom:8px">⚠️ NOT LOGGED YET</div>`;
+    overdue.forEach(item=>{
+      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #FEE2DD">
+        <div style="font-size:12px;color:#E8402A">${item.i} ${item.l}</div>
+        <div style="font-size:10px;color:#E8402A;font-weight:700">Was ${item.t}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
+  h+=`<div class="slbl">SCHEDULE — TAP LOG TO RECORD</div>`;
   sched.forEach(item=>{
     const lg=td().sc[item.id],late=lg?.status==='late';
     const cls='si'+(lg?(late?' late':' ok'):'');
@@ -488,9 +586,9 @@ function rFinance(){
   // Cash expenses today
   if(td().fin.length){
     h+=`<div class="slbl">CASH EXPENSES TODAY</div>`;
-    td().fin.forEach(e=>{
+    td().fin.forEach((e,ei)=>{
       const cat=EC[e.cat]||EC.Other;
-      h+=`<div class="card" style="display:flex;align-items:center;gap:12px"><div style="font-size:24px">${cat.i}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${e.desc}</div><div style="display:flex;gap:6px;margin-top:4px;align-items:center"><span class="pill" style="background:${cat.c}18;color:${cat.c}">${e.cat}</span><span style="font-size:9px;color:#C5BFB0">${e.time}</span></div></div><div style="font-size:15px;font-weight:800;color:#E8402A">₹${e.amt}</div></div>`;
+      h+=`<div class="card" style="display:flex;align-items:center;gap:12px"><div style="font-size:24px">${cat.i}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${e.desc}</div><div style="display:flex;gap:6px;margin-top:4px;align-items:center"><span class="pill" style="background:${cat.c}18;color:${cat.c}">${e.cat}</span><span style="font-size:9px;color:#C5BFB0">${e.time}</span></div></div><div style="display:flex;align-items:center;gap:8px"><div style="font-size:15px;font-weight:800;color:#E8402A">₹${e.amt}</div><button onclick="delExp(${ei})" style="background:#FEF0ED;border:none;border-radius:6px;color:#E8402A;padding:6px 8px;font-size:11px;cursor:pointer;font-family:inherit;-webkit-appearance:none">✕</button></div></div>`;
     });
   }
 
@@ -512,9 +610,9 @@ function rFinance(){
   // CC expenses this month
   if(cc.length){
     h+=`<div class="slbl">CREDIT CARD THIS MONTH</div>`;
-    cc.forEach(e=>{
+    cc.forEach((e,ei)=>{
       const cat=EC[e.cat]||EC.Other;
-      h+=`<div class="card" style="display:flex;align-items:center;gap:12px;border-left:3px solid #2563EB"><div style="font-size:24px">${cat.i}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${e.desc}</div><div style="display:flex;gap:6px;margin-top:4px;align-items:center"><span class="pill" style="background:#EFF6FF;color:#2563EB">CREDIT CARD</span><span style="font-size:9px;color:#C5BFB0">${e.date}</span></div></div><div style="font-size:15px;font-weight:800;color:#2563EB">₹${e.amt}</div></div>`;
+      h+=`<div class="card" style="display:flex;align-items:center;gap:12px;border-left:3px solid #2563EB"><div style="font-size:24px">${cat.i}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${e.desc}</div><div style="display:flex;gap:6px;margin-top:4px;align-items:center"><span class="pill" style="background:#EFF6FF;color:#2563EB">CREDIT CARD</span><span style="font-size:9px;color:#C5BFB0">${e.date}</span></div></div><div style="display:flex;align-items:center;gap:8px"><div style="font-size:15px;font-weight:800;color:#2563EB">₹${e.amt}</div><button onclick="delCC(${ei})" style="background:#EFF6FF;border:none;border-radius:6px;color:#2563EB;padding:6px 8px;font-size:11px;cursor:pointer;font-family:inherit;-webkit-appearance:none">✕</button></div></div>`;
     });
   }
 
@@ -647,6 +745,18 @@ function addGroceryToFinance(){
   save();
   alert(`₹${Math.round(gt)} added to Finance as Weekly Groceries!`);
   uHdr();
+}
+function delExp(idx){
+  if(confirm('Delete this expense?')){
+    td().fin.splice(idx,1);
+    save();rFinance();uHdr();
+  }
+}
+function delCC(idx){
+  if(confirm('Delete this credit card entry?')){
+    mData().cc.splice(idx,1);
+    save();rFinance();
+  }
 }
 function resetGrocery(){
   if(confirm('Reset this week\'s grocery list?')){
