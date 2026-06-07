@@ -26,7 +26,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Courier New',monospace;m
 .hdr-lbl{font-size:9px;letter-spacing:4px;color:var(--red);font-weight:700;margin-bottom:3px;}
 .hdr-date{font-size:16px;font-weight:700;}
 .hdr-quote{font-size:10px;color:var(--muted);margin-top:2px;font-style:italic;}
-.acircle{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:3px solid var(--green);background:#EDF7F233;}
+.acircle{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:3px solid var(--green);}
 .apct{font-size:13px;font-weight:800;color:var(--green);line-height:1;}
 .albl{font-size:7px;color:var(--faint);margin-top:2px;letter-spacing:1px;}
 .stats{display:flex;gap:5px;margin-bottom:12px;overflow-x:auto;}
@@ -69,17 +69,22 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
 .rbox{background:#f8f8f8;padding:12px 14px;border-radius:8px;font-family:monospace;font-size:11px;line-height:2.2;}
 .irow{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--border);}
 .cbtn{padding:7px 12px;border-radius:20px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-family:inherit;font-weight:700;background:var(--bg);color:var(--muted);-webkit-appearance:none;}
-/* GROCERY */
 .gcat{margin-bottom:18px;}
 .gcat-hdr{font-size:10px;letter-spacing:2px;font-weight:700;padding:8px 12px;border-radius:8px;margin-bottom:8px;}
-.gitem{display:flex;align-items:center;gap:12px;padding:11px 14px;background:#fff;border-radius:10px;border:1px solid var(--border);margin-bottom:6px;cursor:pointer;}
+.gitem{border-radius:10px;background:#fff;border:1px solid var(--border);margin-bottom:6px;overflow:hidden;}
 .gitem.checked{background:var(--green-lt);border-color:rgba(42,157,92,0.3);}
-.gcheck{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.gitem.monthly{background:#F5F3FF;border-color:rgba(124,58,237,0.2);}
+.grow{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;}
+.gcheck{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;}
 .gitem.checked .gcheck{background:var(--green);border-color:var(--green);color:#fff;}
-.gname{font-size:13px;flex:1;}
-.gitem.checked .gname{text-decoration:line-through;color:var(--muted);}
-.gqty{font-size:11px;color:var(--muted);font-weight:600;}
-.gflag{font-size:9px;padding:2px 6px;border-radius:4px;background:#FFFBEB;color:#D97706;font-weight:700;margin-left:4px;}
+.gname{font-size:13px;flex:1;line-height:1.3;}
+.gitem.checked .gname{color:var(--muted);}
+.gqty{font-size:10px;color:var(--muted);font-weight:600;flex-shrink:0;}
+.gdish{font-size:9px;color:var(--faint);margin-top:2px;font-style:italic;}
+.gprice-row{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--border);background:rgba(0,0,0,0.02);}
+.gprice-lbl{font-size:10px;color:var(--muted);flex:1;}
+.gprice-input{width:90px;padding:6px 10px;font-size:13px;border:1.5px solid var(--border);border-radius:6px;background:#fff;color:var(--ink);font-family:inherit;-webkit-appearance:none;outline:none;}
+.gflag{font-size:8px;padding:2px 5px;border-radius:4px;font-weight:700;flex-shrink:0;}
 .hidden{display:none!important;}
 .time-note{font-size:10px;color:var(--muted);margin-top:6px;font-style:italic;}
 </style>
@@ -126,67 +131,67 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
 <div class="bbar"><div style="font-size:9px;color:var(--faint);letter-spacing:2px" id="bDate"></div></div>
 
 <script>
-const SK='sumesh_v6',TC=1700,DB=167;
+const SK="sumesh_v8",TC=1700;
 const QT=["Every small step counts. 🌱","You showed up. That's already winning. 💪","Discipline is freedom. Keep going. 🔥","One day at a time. You've got this. ☀️","Progress over perfection. Always. ✨","Your future self is watching. Make them proud. 🎯","Small habits. Big life. 🌟"];
 const DNS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const DSH=["SUN","MON","TUE","WED","THU","FRI","SAT"];
 
-// GROCERY DATA
-const GROCERY = [
-  {cat:"🌾 Staples & Grains", color:"#D97706", bg:"#FFFBEB", items:[
-    {n:"Sattu (Bengal gram flour)", q:"500g"},
-    {n:"Poha (flattened rice)", q:"500g"},
-    {n:"Murmura (puffed rice)", q:"200g"},
-    {n:"Ragi flour", q:"250g"},
-    {n:"Basmati rice", q:"2 kg"},
-    {n:"Whole wheat atta", q:"1 kg"},
-    {n:"Bread (whole wheat)", q:"1 loaf"},
+const GROCERY=[
+  {cat:"🌾 Staples & Grains",color:"#D97706",bg:"#FFFBEB",items:[
+    {n:"Sattu (Bengal gram flour)",q:"500g",dishes:"Mon,Thu,Fri,Sat breakfast"},
+    {n:"Poha (flattened rice)",q:"500g",dishes:"Tue breakfast"},
+    {n:"Murmura (puffed rice)",q:"200g",dishes:"Wed breakfast"},
+    {n:"Ragi flour",q:"250g",dishes:"Fri breakfast"},
+    {n:"Basmati rice",q:"2 kg",dishes:"Mon,Wed,Thu,Fri,Sun lunch/dinner"},
+    {n:"Whole wheat atta",q:"1 kg",dishes:"Tue,Thu,Fri,Sat chapati"},
+    {n:"Bread (whole wheat)",q:"1 loaf",dishes:"Wed,Sun breakfast"},
   ]},
-  {cat:"🫘 Pulses & Legumes", color:"#EA580C", bg:"#FFF7ED", items:[
-    {n:"Toor dal", q:"500g"},
-    {n:"Masoor dal", q:"250g"},
-    {n:"Moong dal", q:"250g"},
-    {n:"Rajma (kidney beans)", q:"250g"},
-    {n:"Chole (chickpeas)", q:"250g"},
-    {n:"Black chana", q:"250g"},
+  {cat:"🫘 Pulses & Legumes",color:"#EA580C",bg:"#FFF7ED",items:[
+    {n:"Toor dal",q:"500g",dishes:"Mon Dal Tadka, Dalma"},
+    {n:"Masoor dal",q:"250g",dishes:"Alternative dal days"},
+    {n:"Moong dal",q:"250g",dishes:"Light dal option"},
+    {n:"Rajma (kidney beans)",q:"250g",dishes:"Thu lunch/dinner — soak Wed night"},
+    {n:"Chole (chickpeas)",q:"250g",dishes:"Tue lunch/dinner — soak Mon night"},
+    {n:"Black chana",q:"250g",dishes:"Alternative legume"},
   ]},
-  {cat:"🥬 Vegetables", color:"#2A9D5C", bg:"#EDF7F2", items:[
-    {n:"Potato (aloo)", q:"500g"},
-    {n:"Cabbage", q:"1 medium"},
-    {n:"Palak (spinach)", q:"1 bunch"},
-    {n:"Bhindi (okra)", q:"250g"},
-    {n:"Cauliflower", q:"1 small"},
-    {n:"Capsicum", q:"2 pcs"},
-    {n:"Brinjal (baingan)", q:"2 pcs"},
-    {n:"Drumstick (sahjan)", q:"4 pcs", flag:"Check Blinkit / buy local"},
-    {n:"Raw banana (kachha kela)", q:"2 pcs", flag:"Check Blinkit / buy local"},
-    {n:"Pumpkin (kakharu)", q:"250g"},
-    {n:"Tomatoes", q:"500g"},
-    {n:"Onions", q:"500g"},
-    {n:"Cucumber", q:"3 pcs"},
-    {n:"Green chillies", q:"100g"},
-    {n:"Ginger", q:"100g"},
-    {n:"Garlic", q:"1 bulb"},
-    {n:"Coriander (dhania) leaves", q:"1 bunch"},
-    {n:"Lemon", q:"4 pcs"},
+  {cat:"🥬 Vegetables",color:"#2A9D5C",bg:"#EDF7F2",items:[
+    {n:"Potato (aloo)",q:"500g",dishes:"Santula, Aloo Potala, daily sabzi"},
+    {n:"Cabbage",q:"1 medium",dishes:"Mon Dal + Cabbage Sabzi"},
+    {n:"Palak (spinach)",q:"1 bunch",dishes:"Saga Bhaja (Odia), Palak Paneer"},
+    {n:"Bhindi (okra)",q:"250g",dishes:"Bhindi Masala"},
+    {n:"Cauliflower",q:"1 small",dishes:"Aloo Gobi, mixed veg"},
+    {n:"Capsicum",q:"2 pcs",dishes:"Capsicum Aloo, mixed veg"},
+    {n:"Brinjal (baingan)",q:"2 pcs",dishes:"Santula, Bharta"},
+    {n:"Drumstick (sahjan)",q:"4 pcs",dishes:"Santula, Drumstick Dal",flag:"Local market"},
+    {n:"Raw banana (kachha kela)",q:"2 pcs",dishes:"Santula",flag:"Local market"},
+    {n:"Pumpkin (kakharu)",q:"250g",dishes:"Santula, Kakharu Bhaja"},
+    {n:"Tomatoes",q:"500g",dishes:"All curries, salad"},
+    {n:"Onions",q:"500g",dishes:"All dishes, salad"},
+    {n:"Cucumber",q:"3 pcs",dishes:"Daily salad"},
+    {n:"Green chillies",q:"100g",dishes:"All dishes"},
+    {n:"Ginger",q:"100g",dishes:"All curries"},
+    {n:"Garlic",q:"1 bulb",dishes:"All curries"},
+    {n:"Coriander leaves",q:"1 bunch",dishes:"Garnish"},
+    {n:"Lemon",q:"4 pcs",dishes:"Salad, dal"},
   ]},
-  {cat:"🥛 Dairy", color:"#2563EB", bg:"#EFF6FF", items:[
-    {n:"Curd", q:"1 kg"},
-    {n:"Milk", q:"1 litre"},
-    {n:"Paneer", q:"200g (for Saturday)"},
+  {cat:"🥛 Dairy",color:"#2563EB",bg:"#EFF6FF",items:[
+    {n:"Curd",q:"1 kg",dishes:"Mon,Wed breakfast + lunch raita"},
+    {n:"Milk",q:"1 litre",dishes:"Sat breakfast, tea"},
+    {n:"Paneer",q:"200g",dishes:"Sat Paneer Bhurji only"},
   ]},
-  {cat:"🍌 Fruits", color:"#7C3AED", bg:"#F5F3FF", items:[
-    {n:"Bananas", q:"6–8 pcs"},
+  {cat:"🍌 Fruits",color:"#7C3AED",bg:"#F5F3FF",items:[
+    {n:"Bananas",q:"8 pcs",dishes:"Mon,Thu,Fri,Sat breakfast"},
   ]},
-  {cat:"🫙 Condiments & Extras", color:"#0D9488", bg:"#F0FDFA", items:[
-    {n:"Peanut butter", q:"1 jar (if running low)"},
-    {n:"Jaggery (gur)", q:"small block"},
-    {n:"Mustard oil or sunflower oil", q:"500ml (if running low)"},
-    {n:"Mustard seeds", q:"small pack (if needed)"},
-    {n:"Papad", q:"1 pack"},
+  {cat:"🫙 Condiments",color:"#0D9488",bg:"#F0FDFA",items:[
+    {n:"Peanut butter",q:"1 jar",dishes:"Wed,Fri breakfast"},
+    {n:"Jaggery (gur)",q:"small block",dishes:"Tue Sattu breakfast"},
+    {n:"Papad",q:"1 pack",dishes:"With Dalma, Khichdi"},
+    {n:"Mustard seeds",q:"if needed",dishes:"Besara, Santula tempering",monthly:true},
+    {n:"Cooking oil",q:"500ml if needed",dishes:"All cooking",monthly:true},
+    {n:"Turmeric, chilli, coriander powder",q:"if running low",dishes:"All dishes",monthly:true},
   ]},
-  {cat:"🟢 Health & Essentials", color:"#E8402A", bg:"#FEF0ED", items:[
-    {n:"Nicotine gum 2mg", q:"1 pack", flag:"NON-NEGOTIABLE"},
+  {cat:"🟢 Essentials",color:"#E8402A",bg:"#FEF0ED",items:[
+    {n:"Nicotine gum 2mg",q:"1 pack",dishes:"NON-NEGOTIABLE — before every craving"},
   ]},
 ];
 
@@ -259,24 +264,27 @@ function getSched(dow){
   return b;
 }
 
-let D={},curTab='today',selCat='Food',studyOn=null,studyIv=null,studyEl=0;
-let openLogId=null,openFoodType=null,foodDev=false,showUnplan=false,showExp=false;
+let D={},curTab='today',selCat='Groceries',studyOn=null,studyIv=null,studyEl=0;
+let openLogId=null,openFoodType=null,foodDev=false,showUnplan=false,showExp=false,showCC=false,selCCCat='Groceries';
 const dow=new Date().getDay(),sched=getSched(dow),fp=FP[dow],sp=SP[dow];
 
 function tKey(){return new Date().toISOString().slice(0,10);}
 function now(){const d=new Date();return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 function td(){return D[tKey()];}
+function weekKey(){const d=new Date();const day=d.getDay();const diff=d.getDate()-day+(day===0?-6:1);const mon=new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1)));return mon.toISOString().slice(0,10);}
+function gData(){const k='g_'+weekKey();if(!D[k])D[k]={checks:{},prices:{}};return D[k];}
+
 function load(){
   try{const r=localStorage.getItem(SK);D=r?JSON.parse(r):{};}catch{D={};}
   const k=tKey();
   if(!D[k])D[k]={sc:{},food:[],study:[],h:{cigs:0,gum:0,steps:0,wt:98},fin:[],unp:[]};
-  // grocery checks stored separately with week key
-  const wk=weekKey();
-  if(!D['grocery_'+wk])D['grocery_'+wk]={};
+  gData();
+  mData();
+  // Set June budget
+  const mk='monthbudget_'+monthKey();
+  if(!D[mk])D[mk]={daily:61};
 }
 function save(){try{localStorage.setItem(SK,JSON.stringify(D));}catch{}}
-function weekKey(){const d=new Date();const day=d.getDay();const diff=d.getDate()-day+(day===0?-6:1);const mon=new Date(d.setDate(diff));return mon.toISOString().slice(0,10);}
-function gChecks(){return D['grocery_'+weekKey()]||{};}
 
 function tCal(){return td().food.reduce((s,f)=>s+f.cal,0);}
 function tSpent(){return td().fin.reduce((s,e)=>s+e.amt,0);}
@@ -284,6 +292,9 @@ function dTasks(){return sched.filter(i=>td().sc[i.id]).length;}
 function sMins(){return td().study.reduce((s,x)=>s+x.mins,0);}
 function fAdh(){const f=td().food;if(!f.length)return 0;return Math.round(f.filter(x=>!x.dev).length/f.length*100);}
 function align(){return Math.round(dTasks()/sched.length*100);}
+function gTotal(){const gd=gData();return Object.values(gd.prices).reduce((s,v)=>s+(parseFloat(v)||0),0);}
+function gChecked(){return Object.values(gData().checks).filter(Boolean).length;}
+function gAll(){return GROCERY.reduce((s,c)=>s+c.items.length,0);}
 
 function uHdr(){
   const d=new Date();
@@ -324,7 +335,6 @@ function render(n){
   uHdr();
 }
 
-// TODAY
 function rToday(){
   const el=document.getElementById('tab-today');
   let h=`<div class="slbl">SCHEDULE — TAP LOG TO RECORD</div>`;
@@ -333,52 +343,15 @@ function rToday(){
     const cls='si'+(lg?(late?' late':' ok'):'');
     const tc=lg?(late?'#D97706':'#2A9D5C'):'#C5BFB0';
     const tl=lg?(late?`⏱ LATE ${lg.time}`:`✓ ${lg.time}`):`by ${item.t}`;
-    h+=`<div class="${cls}">
-      <div class="si-icon">${item.i}</div>
-      <div class="si-body">
-        <div class="si-row">
-          <div class="si-lbl${lg?' done':''}">${item.l}</div>
-          <div class="si-t" style="color:${tc}">${tl}</div>
-        </div>
-        <div class="si-d">${item.d}</div>
-        ${lg&&lg.note?`<div class="si-n">"${lg.note}"</div>`:''}
-        ${!lg?`<button class="lbtn" style="background:${item.a}" onclick="toggleLog('${item.id}')">LOG</button>`:''}
-      </div>
-    </div>`;
+    h+=`<div class="${cls}"><div class="si-icon">${item.i}</div><div class="si-body"><div class="si-row"><div class="si-lbl${lg?' done':''}">${item.l}</div><div class="si-t" style="color:${tc}">${tl}</div></div><div class="si-d">${item.d}</div>${lg&&lg.note?`<div class="si-n">"${lg.note}"</div>`:''}${!lg?`<button class="lbtn" style="background:${item.a}" onclick="toggleLog('${item.id}')">LOG</button>`:''}</div></div>`;
     if(!lg&&openLogId===item.id){
-      h+=`<div class="iform">
-        <div style="font-size:9px;color:${item.a};letter-spacing:2px;font-weight:700;margin-bottom:10px">LOGGING — ${item.l.toUpperCase()}</div>
-        <label class="flbl">ACTUAL TIME (change if logging late)</label>
-        <input type="time" id="lt_${item.id}" value="${now()}" style="margin-bottom:6px">
-        <div class="time-note">Default is now. Change to actual time if needed.</div>
-        <label class="flbl" style="margin-top:10px">NOTE (optional)</label>
-        <input type="text" id="ln_${item.id}" placeholder="e.g. Ran late, skipped...">
-        <div class="brow">
-          <button class="bp" style="background:#2A9D5C" onclick="confirmLog('${item.id}')">CONFIRM ✓</button>
-          <button class="bs" onclick="cancelLog()">CANCEL</button>
-        </div>
-      </div>`;
+      h+=`<div class="iform"><div style="font-size:9px;color:${item.a};letter-spacing:2px;font-weight:700;margin-bottom:10px">LOGGING — ${item.l.toUpperCase()}</div><label class="flbl">ACTUAL TIME (change if logging late)</label><input type="time" id="lt_${item.id}" value="${now()}" style="margin-bottom:6px"><div class="time-note">Default is now. Change to actual time if needed.</div><label class="flbl" style="margin-top:10px">NOTE (optional)</label><input type="text" id="ln_${item.id}" placeholder="e.g. Ran late, skipped..."><div class="brow"><button class="bp" style="background:#2A9D5C" onclick="confirmLog('${item.id}')">CONFIRM ✓</button><button class="bs" onclick="cancelLog()">CANCEL</button></div></div>`;
     }
   });
   h+=`<div style="margin-top:16px"><div class="slbl">UNPLANNED ACTIVITIES</div>`;
-  td().unp.forEach(u=>{
-    h+=`<div class="card" style="display:flex;justify-content:space-between;align-items:center;background:#FFFBEB;border-color:rgba(217,119,6,0.3)">
-      <div><div style="font-size:13px;font-weight:600">${u.l}</div>${u.n?`<div style="font-size:10px;color:#8A8070">${u.n}</div>`:''}</div>
-      <div style="font-size:10px;color:#D97706;font-weight:700">${u.t}</div>
-    </div>`;
-  });
+  td().unp.forEach(u=>{h+=`<div class="card" style="display:flex;justify-content:space-between;align-items:center;background:#FFFBEB;border-color:rgba(217,119,6,0.3)"><div><div style="font-size:13px;font-weight:600">${u.l}</div>${u.n?`<div style="font-size:10px;color:#8A8070">${u.n}</div>`:''}</div><div style="font-size:10px;color:#D97706;font-weight:700">${u.t}</div></div>`;});
   if(showUnplan){
-    h+=`<div class="iform">
-      <div style="font-size:9px;color:#D97706;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG UNPLANNED ACTIVITY</div>
-      <label class="flbl">ACTIVITY</label>
-      <input type="text" id="ul" placeholder="e.g. Ironed clothes, nap..." style="margin-bottom:10px">
-      <label class="flbl">NOTE (optional)</label>
-      <input type="text" id="un" placeholder="Optional..." style="margin-bottom:10px">
-      <div class="brow">
-        <button class="bp" style="background:#D97706" onclick="logUnplan()">LOG ✓</button>
-        <button class="bs" onclick="showUnplan=false;rToday()">CANCEL</button>
-      </div>
-    </div>`;
+    h+=`<div class="iform"><div style="font-size:9px;color:#D97706;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG UNPLANNED ACTIVITY</div><label class="flbl">ACTIVITY</label><input type="text" id="ul" placeholder="e.g. Ironed clothes, nap..." style="margin-bottom:10px"><label class="flbl">NOTE (optional)</label><input type="text" id="un" placeholder="Optional..." style="margin-bottom:10px"><div class="brow"><button class="bp" style="background:#D97706" onclick="logUnplan()">LOG ✓</button><button class="bs" onclick="showUnplan=false;rToday()">CANCEL</button></div></div>`;
   } else {
     h+=`<button class="abtn" style="color:#D97706" onclick="showUnplan=true;rToday()">+ LOG UNPLANNED ACTIVITY</button>`;
   }
@@ -402,261 +375,192 @@ function logUnplan(){
   save();showUnplan=false;rToday();
 }
 
-// FOOD
 function rFood(){
   const el=document.getElementById('tab-food');
   const tc=tCal(),fa=fAdh();
-  let h=`<div class="card" style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-color:rgba(217,119,6,0.3)">
-    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-      <div>
-        <div style="font-size:9px;color:#D97706;letter-spacing:2px;font-weight:700">CALORIES TODAY</div>
-        <div style="font-size:30px;font-weight:800;color:${tc>TC?'#E8402A':'#1A1814'}">${tc}</div>
-        <div style="font-size:10px;color:#8A8070">Target: ${TC} cal/day</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:9px;color:#0D9488;letter-spacing:2px;font-weight:700">ADHERENCE</div>
-        <div style="font-size:30px;font-weight:800;color:${fa>=80?'#2A9D5C':'#D97706'}">${fa}%</div>
-        <div style="font-size:10px;color:#8A8070">to plan</div>
-      </div>
-    </div>
-    <div class="pt" style="background:#FDE68A">
-      <div class="pf" style="width:${Math.min(100,(tc/TC)*100)}%;background:${tc>TC?'#E8402A':'#2A9D5C'}"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-top:6px">
-      <div style="font-size:9px;color:#8A8070">0</div>
-      <div style="font-size:10px;color:#D97706;font-weight:700">${Math.max(0,TC-tc)} cal remaining</div>
-      <div style="font-size:9px;color:#8A8070">${TC}</div>
-    </div>
-  </div>
-  <div class="slbl">TODAY'S MEAL PLAN</div>`;
-  const meals=[
-    {key:'b',type:'breakfast',label:'BREAKFAST',bg:'#FFFBEB',ac:'#D97706'},
-    {key:'l',type:'lunch',label:'LUNCH',bg:'#EDF7F2',ac:'#2A9D5C'},
-    {key:'d',type:'dinner',label:'DINNER',bg:'#EFF6FF',ac:'#2563EB'},
-  ];
-  meals.forEach(({key,type,label,bg,ac})=>{
-    const plan=fp[key];
-    const logged=td().food.find(f=>f.type===type);
-    h+=`<div class="card" style="background:${logged?bg:'#fff'};border-color:${logged?ac+'55':'#EDE9E0'}">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
-        <div style="flex:1">
-          <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center">
-            <span class="pill" style="background:${bg};color:${ac}">${label}</span>
-            ${logged?`<span class="pill" style="background:#EDF7F2;color:#2A9D5C">LOGGED ✓</span>`:''}
-            ${logged?.dev?`<span class="pill" style="background:#FFFBEB;color:#D97706">DEVIATED</span>`:''}
-          </div>
-          <div style="font-size:13px;font-weight:500;line-height:1.5">${plan.n}</div>
-          <div style="font-size:10px;color:#8A8070;margin-top:4px">~${Math.round(plan.c*plan.g)} cal for ${plan.g}g</div>
-          ${logged?`<div style="font-size:11px;color:${ac};font-weight:700;margin-top:6px">${logged.grams}g = ${logged.cal} cal · ${logged.time}</div>`:''}
-        </div>
-        ${!logged?`<button class="lbtn" style="background:${ac};margin-top:0" onclick="toggleFood('${type}')">LOG</button>`:''}
-      </div>
-    </div>`;
+  let h=`<div class="card" style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-color:rgba(217,119,6,0.3)"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><div><div style="font-size:9px;color:#D97706;letter-spacing:2px;font-weight:700">CALORIES TODAY</div><div style="font-size:30px;font-weight:800;color:${tc>TC?'#E8402A':'#1A1814'}">${tc}</div><div style="font-size:10px;color:#8A8070">Target: ${TC} cal/day</div></div><div style="text-align:right"><div style="font-size:9px;color:#0D9488;letter-spacing:2px;font-weight:700">ADHERENCE</div><div style="font-size:30px;font-weight:800;color:${fa>=80?'#2A9D5C':'#D97706'}">${fa}%</div><div style="font-size:10px;color:#8A8070">to plan</div></div></div><div class="pt" style="background:#FDE68A"><div class="pf" style="width:${Math.min(100,(tc/TC)*100)}%;background:${tc>TC?'#E8402A':'#2A9D5C'}"></div></div><div style="display:flex;justify-content:space-between;margin-top:6px"><div style="font-size:9px;color:#8A8070">0</div><div style="font-size:10px;color:#D97706;font-weight:700">${Math.max(0,TC-tc)} cal remaining</div><div style="font-size:9px;color:#8A8070">${TC}</div></div></div><div class="slbl">TODAY'S MEAL PLAN</div>`;
+  [{key:'b',type:'breakfast',label:'BREAKFAST',bg:'#FFFBEB',ac:'#D97706'},{key:'l',type:'lunch',label:'LUNCH',bg:'#EDF7F2',ac:'#2A9D5C'},{key:'d',type:'dinner',label:'DINNER',bg:'#EFF6FF',ac:'#2563EB'}].forEach(({key,type,label,bg,ac})=>{
+    const plan=fp[key],logged=td().food.find(f=>f.type===type);
+    h+=`<div class="card" style="background:${logged?bg:'#fff'};border-color:${logged?ac+'55':'#EDE9E0'}"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div style="flex:1"><div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center"><span class="pill" style="background:${bg};color:${ac}">${label}</span>${logged?`<span class="pill" style="background:#EDF7F2;color:#2A9D5C">LOGGED ✓</span>`:''}${logged?.dev?`<span class="pill" style="background:#FFFBEB;color:#D97706">DEVIATED</span>`:''}</div><div style="font-size:13px;font-weight:500;line-height:1.5">${plan.n}</div><div style="font-size:10px;color:#8A8070;margin-top:4px">~${Math.round(plan.c*plan.g)} cal for ${plan.g}g</div>${logged?`<div style="font-size:11px;color:${ac};font-weight:700;margin-top:6px">${logged.grams}g = ${logged.cal} cal · ${logged.time}</div>`:''}</div>${!logged?`<button class="lbtn" style="background:${ac};margin-top:0" onclick="toggleFood('${type}')">LOG</button>`:''}</div></div>`;
     if(!logged&&openFoodType===type){
       if(!foodDev){
-        h+=`<div class="iform">
-          <div style="font-size:9px;color:${ac};letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG ${label}</div>
-          <div style="background:${bg};border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;font-weight:500">${plan.n}</div>
-          <label class="flbl">QUANTITY (grams)</label>
-          <input type="number" id="fg" value="${plan.g}" oninput="uCalc('${key}','${ac}')" style="margin-bottom:6px">
-          <div id="calShow" style="font-size:11px;color:${ac};font-weight:700;margin-bottom:12px">= ~${Math.round(plan.c*plan.g)} calories</div>
-          <div class="brow" style="margin-bottom:10px">
-            <button class="bp" style="background:${ac}" onclick="confirmFood('${type}','${key}')">LOG ✓</button>
-            <button class="bs" onclick="cancelFood()">CANCEL</button>
-          </div>
-          <button class="bs" style="width:100%;margin-top:4px" onclick="foodDev=true;rFood()">Had something different?</button>
-        </div>`;
+        h+=`<div class="iform"><div style="font-size:9px;color:${ac};letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG ${label}</div><div style="background:${bg};border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;font-weight:500">${plan.n}</div><label class="flbl">QUANTITY (grams)</label><input type="number" id="fg" value="${plan.g}" oninput="uCalc('${key}','${ac}')" style="margin-bottom:6px"><div id="calShow" style="font-size:11px;color:${ac};font-weight:700;margin-bottom:12px">= ~${Math.round(plan.c*plan.g)} calories</div><div class="brow" style="margin-bottom:10px"><button class="bp" style="background:${ac}" onclick="confirmFood('${type}','${key}')">LOG ✓</button><button class="bs" onclick="cancelFood()">CANCEL</button></div><button class="bs" style="width:100%;margin-top:4px" onclick="foodDev=true;rFood()">Had something different?</button></div>`;
       } else {
-        h+=`<div class="iform">
-          <div style="font-size:9px;color:#D97706;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG DEVIATION</div>
-          <div style="background:#FFFBEB;border-radius:8px;padding:8px;margin-bottom:10px;font-size:11px;color:#D97706;font-weight:700">⚡ Different from plan</div>
-          <label class="flbl">WHAT DID YOU EAT?</label>
-          <input type="text" id="fn" placeholder="e.g. Poha, chai..." style="margin-bottom:10px">
-          <label class="flbl">QUANTITY (grams)</label>
-          <input type="number" id="fg2" placeholder="e.g. 200" style="margin-bottom:10px">
-          <label class="flbl">CALORIES (leave blank if unknown)</label>
-          <input type="number" id="fc" placeholder="e.g. 300" style="margin-bottom:12px">
-          <div class="brow">
-            <button class="bp" style="background:#D97706" onclick="confirmFoodDev('${type}')">LOG ✓</button>
-            <button class="bs" onclick="foodDev=false;rFood()">BACK</button>
-          </div>
-        </div>`;
+        h+=`<div class="iform"><div style="font-size:9px;color:#D97706;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG DEVIATION</div><div style="background:#FFFBEB;border-radius:8px;padding:8px;margin-bottom:10px;font-size:11px;color:#D97706;font-weight:700">⚡ Different from plan</div><label class="flbl">WHAT DID YOU EAT?</label><input type="text" id="fn" placeholder="e.g. Poha, chai..." style="margin-bottom:10px"><label class="flbl">QUANTITY (grams)</label><input type="number" id="fg2" placeholder="e.g. 200" style="margin-bottom:10px"><label class="flbl">CALORIES (leave blank if unknown)</label><input type="number" id="fc" placeholder="e.g. 300" style="margin-bottom:12px"><div class="brow"><button class="bp" style="background:#D97706" onclick="confirmFoodDev('${type}')">LOG ✓</button><button class="bs" onclick="foodDev=false;rFood()">BACK</button></div></div>`;
       }
     }
   });
   h+=`<div style="margin-top:8px"><div class="slbl">SNACKS / EXTRAS</div>`;
-  td().food.filter(f=>f.type==='other').forEach(f=>{
-    h+=`<div class="card" style="display:flex;justify-content:space-between;align-items:center">
-      <div><div style="font-size:13px">${f.name}</div><div style="font-size:10px;color:#8A8070">${f.grams}g · ${f.time}</div></div>
-      <div style="font-size:13px;font-weight:700;color:#D97706">${f.cal} cal</div>
-    </div>`;
-  });
+  td().food.filter(f=>f.type==='other').forEach(f=>{h+=`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px">${f.name}</div><div style="font-size:10px;color:#8A8070">${f.grams}g · ${f.time}</div></div><div style="font-size:13px;font-weight:700;color:#D97706">${f.cal} cal</div></div>`;});
   if(openFoodType==='other'){
-    h+=`<div class="iform">
-      <div style="font-size:9px;color:#8A8070;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG SNACK / EXTRA</div>
-      <label class="flbl">WHAT DID YOU EAT?</label>
-      <input type="text" id="fn" placeholder="e.g. Chai, biscuits..." style="margin-bottom:10px">
-      <label class="flbl">QUANTITY (grams)</label>
-      <input type="number" id="fg2" placeholder="e.g. 100" style="margin-bottom:10px">
-      <label class="flbl">CALORIES (leave blank if unknown)</label>
-      <input type="number" id="fc" placeholder="e.g. 150" style="margin-bottom:12px">
-      <div class="brow">
-        <button class="bp" style="background:#8A8070" onclick="confirmFoodDev('other')">LOG ✓</button>
-        <button class="bs" onclick="cancelFood()">CANCEL</button>
-      </div>
-    </div>`;
+    h+=`<div class="iform"><div style="font-size:9px;color:#8A8070;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG SNACK / EXTRA</div><label class="flbl">WHAT DID YOU EAT?</label><input type="text" id="fn" placeholder="e.g. Chai, biscuits..." style="margin-bottom:10px"><label class="flbl">QUANTITY (grams)</label><input type="number" id="fg2" placeholder="e.g. 100" style="margin-bottom:10px"><label class="flbl">CALORIES (leave blank if unknown)</label><input type="number" id="fc" placeholder="e.g. 150" style="margin-bottom:12px"><div class="brow"><button class="bp" style="background:#8A8070" onclick="confirmFoodDev('other')">LOG ✓</button><button class="bs" onclick="cancelFood()">CANCEL</button></div></div>`;
   } else {
     h+=`<button class="abtn" style="color:#8A8070" onclick="toggleFood('other')">+ LOG SNACK / EXTRA FOOD</button>`;
   }
   h+='</div>';
   el.innerHTML=h;
 }
-function uCalc(key,ac){
-  const g=parseFloat(document.getElementById('fg')?.value)||0;
-  const plan=fp[key];
-  const el=document.getElementById('calShow');
-  if(el&&plan) el.textContent=`= ~${Math.round(plan.c*g)} calories`;
-}
+function uCalc(key,ac){const g=parseFloat(document.getElementById('fg')?.value)||0;const plan=fp[key];const el=document.getElementById('calShow');if(el&&plan)el.textContent=`= ~${Math.round(plan.c*g)} calories`;}
 function toggleFood(type){openFoodType=openFoodType===type?null:type;foodDev=false;rFood();}
 function cancelFood(){openFoodType=null;foodDev=false;rFood();}
-function confirmFood(type,key){
-  const g=parseFloat(document.getElementById('fg')?.value);
-  if(!g)return;
-  const plan=fp[key];
-  td().food.push({type,name:plan.n,grams:g,cal:Math.round(plan.c*g),time:now(),dev:false});
-  save();cancelFood();
-}
-function confirmFoodDev(type){
-  const name=document.getElementById('fn')?.value.trim();
-  const grams=parseFloat(document.getElementById('fg2')?.value);
-  const calIn=parseInt(document.getElementById('fc')?.value)||0;
-  if(!name||!grams)return;
-  td().food.push({type,name,grams,cal:calIn||Math.round(grams*1.5),time:now(),dev:true});
-  save();cancelFood();
-}
+function confirmFood(type,key){const g=parseFloat(document.getElementById('fg')?.value);if(!g)return;const plan=fp[key];td().food.push({type,name:plan.n,grams:g,cal:Math.round(plan.c*g),time:now(),dev:false});save();cancelFood();}
+function confirmFoodDev(type){const name=document.getElementById('fn')?.value.trim();const grams=parseFloat(document.getElementById('fg2')?.value);const calIn=parseInt(document.getElementById('fc')?.value)||0;if(!name||!grams)return;td().food.push({type,name,grams,cal:calIn||Math.round(grams*1.5),time:now(),dev:true});save();cancelFood();}
 
-// STUDY
 function fmtEl(){return `${String(Math.floor(studyEl/60)).padStart(2,'0')}:${String(studyEl%60).padStart(2,'0')}`;}
 function rStudy(){
   const el=document.getElementById('tab-study');
   const sm=sMins();
-  let h=`<div class="slbl">TODAY'S STUDY</div>
-  <div class="card" style="background:${sp.c}18;border:1.5px solid ${sp.c}44">
-    <div style="display:flex;justify-content:space-between;margin-bottom:12px">
-      <div><div style="font-size:9px;color:${sp.c};letter-spacing:2px;font-weight:700">SUBJECT</div><div style="font-size:24px;font-weight:800;color:${sp.c}">${sp.s}</div></div>
-      <div style="text-align:right"><div style="font-size:9px;color:#C5BFB0;letter-spacing:2px">LOGGED</div><div style="font-size:24px;font-weight:800;color:${sm>=60?'#2A9D5C':'#D97706'}">${sm}m</div></div>
-    </div>
-    <div style="font-size:9px;color:#C5BFB0;margin-bottom:6px">TODAY'S TOPIC</div>
-    <div style="font-size:13px;font-weight:500;line-height:1.6;margin-bottom:16px">${sp.t}</div>
-    ${studyOn
-      ?`<div class="tdsp" style="color:#2A9D5C">${fmtEl()}</div><div class="tsub">Started at ${studyOn.st}</div><button class="bp" style="background:#E8402A;width:100%" onclick="stopStudy()">⏹ STOP + SAVE SESSION</button>`
-      :`<button class="bp" style="background:${sp.c};width:100%" onclick="startStudy()">▶ START STUDY SESSION</button>`}
-  </div>`;
-  if(td().study.length){
-    h+=`<div class="slbl" style="margin-top:8px">SESSIONS TODAY</div>`;
-    td().study.forEach(s=>{
-      h+=`<div class="card" style="display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-size:13px;font-weight:700;color:${s.sub==='MBA'?'#7C3AED':'#0D9488'}">${s.sub}</div><div style="font-size:10px;color:#8A8070;margin-top:2px">${s.start} → ${s.end}</div><div style="font-size:10px;color:#C5BFB0;font-style:italic;margin-top:2px">${s.topic}</div></div>
-        <div style="font-size:20px;font-weight:800">${s.mins}m</div>
-      </div>`;
-    });
-  }
+  let h=`<div class="slbl">TODAY'S STUDY</div><div class="card" style="background:${sp.c}18;border:1.5px solid ${sp.c}44"><div style="display:flex;justify-content:space-between;margin-bottom:12px"><div><div style="font-size:9px;color:${sp.c};letter-spacing:2px;font-weight:700">SUBJECT</div><div style="font-size:24px;font-weight:800;color:${sp.c}">${sp.s}</div></div><div style="text-align:right"><div style="font-size:9px;color:#C5BFB0;letter-spacing:2px">LOGGED</div><div style="font-size:24px;font-weight:800;color:${sm>=60?'#2A9D5C':'#D97706'}">${sm}m</div></div></div><div style="font-size:9px;color:#C5BFB0;margin-bottom:6px">TODAY'S TOPIC</div><div style="font-size:13px;font-weight:500;line-height:1.6;margin-bottom:16px">${sp.t}</div>${studyOn?`<div class="tdsp" style="color:#2A9D5C">${fmtEl()}</div><div class="tsub">Started at ${studyOn.st}</div><button class="bp" style="background:#E8402A;width:100%" onclick="stopStudy()">⏹ STOP + SAVE SESSION</button>`:`<button class="bp" style="background:${sp.c};width:100%" onclick="startStudy()">▶ START STUDY SESSION</button>`}</div>`;
+  if(td().study.length){h+=`<div class="slbl" style="margin-top:8px">SESSIONS TODAY</div>`;td().study.forEach(s=>{h+=`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:700;color:${s.sub==='MBA'?'#7C3AED':'#0D9488'}">${s.sub}</div><div style="font-size:10px;color:#8A8070;margin-top:2px">${s.start} → ${s.end}</div><div style="font-size:10px;color:#C5BFB0;font-style:italic;margin-top:2px">${s.topic}</div></div><div style="font-size:20px;font-weight:800">${s.mins}m</div></div>`;});}
   h+=`<div style="margin-top:8px"><div class="slbl">THIS WEEK'S PLAN</div>`;
-  [0,1,2,3,4,5,6].forEach(wd=>{
-    const s=SP[wd],isT=wd===dow;
-    h+=`<div class="card" style="display:flex;gap:12px;align-items:center;background:${isT?s.c+'18':'#fff'};border:${isT?`1.5px solid ${s.c}55`:'1px solid #EDE9E0'}">
-      <div style="font-size:10px;color:${isT?s.c:'#C5BFB0'};font-weight:700;min-width:30px">${DSH[wd]}</div>
-      <div style="flex:1"><div style="font-size:11px;font-weight:700;color:${s.c}">${s.s}</div><div style="font-size:10px;color:#8A8070">${s.t}</div></div>
-      ${isT?`<span class="pill" style="background:${s.c}18;color:${s.c}">TODAY</span>`:''}
-    </div>`;
-  });
+  [0,1,2,3,4,5,6].forEach(wd=>{const s=SP[wd],isT=wd===dow;h+=`<div class="card" style="display:flex;gap:12px;align-items:center;background:${isT?s.c+'18':'#fff'};border:${isT?`1.5px solid ${s.c}55`:'1px solid #EDE9E0'}"><div style="font-size:10px;color:${isT?s.c:'#C5BFB0'};font-weight:700;min-width:30px">${DSH[wd]}</div><div style="flex:1"><div style="font-size:11px;font-weight:700;color:${s.c}">${s.s}</div><div style="font-size:10px;color:#8A8070">${s.t}</div></div>${isT?`<span class="pill" style="background:${s.c}18;color:${s.c}">TODAY</span>`:''}</div>`;});
   h+='</div>';
   el.innerHTML=h;
 }
 function startStudy(){studyOn={st:now(),ts:Date.now()};studyIv=setInterval(()=>{studyEl=Math.floor((Date.now()-studyOn.ts)/1000);rStudy();},1000);rStudy();}
 function stopStudy(){if(!studyOn)return;clearInterval(studyIv);studyIv=null;const mins=Math.round(studyEl/60);td().study.push({sub:sp.s,topic:sp.t,start:studyOn.st,end:now(),mins});save();studyOn=null;studyEl=0;rStudy();uHdr();}
 
-// HEALTH
 function rHealth(){
   const el=document.getElementById('tab-health');
   const h=td().h;
   let htm=`<div class="slbl">DAILY HEALTH</div>`;
-  [{k:'cigs',l:'CIGARETTES',i:'🚭',u:'smoked today',t:'≤ 4/day',ok:h.cigs<=4,s:1,f:v=>v},
-   {k:'gum',l:'NICOTINE GUM',i:'🟢',u:'pieces used today',t:'Use before every craving',ok:true,s:1,f:v=>v},
-   {k:'steps',l:'STEPS',i:'👟',u:'steps today',t:'6,000+',ok:h.steps>=6000,s:500,f:v=>v.toLocaleString()},
-  ].forEach(({k,l,i,u,t,ok,s,f})=>{
-    const fc=k==='cigs'&&h.cigs>4?'#E8402A':(k==='gum'?'#0D9488':(ok?'#2A9D5C':'#D97706'));
-    const fbg=k==='cigs'&&h.cigs>4?'#FEF0ED':(k==='gum'?'#F0FDFA':(ok?'#EDF7F2':'#FFFBEB'));
-    htm+=`<div class="card" style="background:${fbg};border-color:${fc}33">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div>
-          <div style="font-size:9px;color:${fc};letter-spacing:2px;font-weight:700">${l}</div>
-          <div style="font-size:34px;font-weight:800;color:${fc};line-height:1.1">${f(h[k]||0)}</div>
-          <div style="font-size:10px;color:#8A8070">${u} · ${t}</div>
-        </div>
-        <div style="font-size:38px">${i}</div>
-      </div>
-      <div class="hbtns">
-        <button class="hb" style="background:#fff;border:1.5px solid #EDE9E0;color:#1A1814" onclick="uH('${k}',${-s})">−</button>
-        <button class="hb" style="background:${fc};color:#fff" onclick="uH('${k}',${s})">+</button>
-      </div>
-    </div>`;
+  [{k:'cigs',l:'CIGARETTES',i:'🚭',u:'smoked today',t:'≤ 4/day',s:1,f:v=>v},{k:'gum',l:'NICOTINE GUM',i:'🟢',u:'pieces used today',t:'Use before every craving',s:1,f:v=>v},{k:'steps',l:'STEPS',i:'👟',u:'steps today',t:'6,000+',s:500,f:v=>v.toLocaleString()}].forEach(({k,l,i,u,t,s,f})=>{
+    const fc=k==='cigs'&&h.cigs>4?'#E8402A':(k==='cigs'?'#2A9D5C':(k==='gum'?'#0D9488':(h.steps>=6000?'#2A9D5C':'#D97706')));
+    const fbg=k==='cigs'&&h.cigs>4?'#FEF0ED':(k==='cigs'?'#EDF7F2':(k==='gum'?'#F0FDFA':(h.steps>=6000?'#EDF7F2':'#FFFBEB')));
+    htm+=`<div class="card" style="background:${fbg};border-color:${fc}33"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div><div style="font-size:9px;color:${fc};letter-spacing:2px;font-weight:700">${l}</div><div style="font-size:34px;font-weight:800;color:${fc};line-height:1.1">${f(h[k]||0)}</div><div style="font-size:10px;color:#8A8070">${u} · ${t}</div></div><div style="font-size:38px">${i}</div></div><div class="hbtns"><button class="hb" style="background:#fff;border:1.5px solid #EDE9E0;color:#1A1814" onclick="uH('${k}',${-s})">−</button><button class="hb" style="background:${fc};color:#fff" onclick="uH('${k}',${s})">+</button></div></div>`;
   });
   const wt=h.wt||98;
-  htm+=`<div class="card" style="background:#F5F3FF;border-color:#7C3AED33">
-    <div style="font-size:9px;color:#7C3AED;letter-spacing:2px;font-weight:700;margin-bottom:10px">WEIGHT — LOG EVERY SUNDAY</div>
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <div style="font-size:34px;font-weight:800;color:#7C3AED">${parseFloat(wt).toFixed(1)} kg</div>
-        <div style="font-size:10px;color:#8A8070">Start: 98 kg · Target: 78–82 kg</div>
-        <div style="font-size:11px;color:#7C3AED;font-weight:700;margin-top:4px">${(parseFloat(wt)-80).toFixed(1)} kg to go 💪</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button style="background:#fff;border:1.5px solid #EDE9E0;border-radius:8px;color:#1A1814;padding:10px 16px;font-size:16px;cursor:pointer;-webkit-appearance:none" onclick="uW(-0.1)">−</button>
-        <button style="background:#7C3AED;border:none;border-radius:8px;color:#fff;padding:10px 16px;font-size:16px;cursor:pointer;-webkit-appearance:none" onclick="uW(0.1)">+</button>
-      </div>
-    </div>
-  </div>`;
+  htm+=`<div class="card" style="background:#F5F3FF;border-color:#7C3AED33"><div style="font-size:9px;color:#7C3AED;letter-spacing:2px;font-weight:700;margin-bottom:10px">WEIGHT — LOG EVERY SUNDAY</div><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:34px;font-weight:800;color:#7C3AED">${parseFloat(wt).toFixed(1)} kg</div><div style="font-size:10px;color:#8A8070">Start: 98 kg · Target: 78–82 kg</div><div style="font-size:11px;color:#7C3AED;font-weight:700;margin-top:4px">${(parseFloat(wt)-80).toFixed(1)} kg to go 💪</div></div><div style="display:flex;flex-direction:column;gap:6px"><button style="background:#fff;border:1.5px solid #EDE9E0;border-radius:8px;color:#1A1814;padding:10px 16px;font-size:16px;cursor:pointer;-webkit-appearance:none" onclick="uW(-0.1)">−</button><button style="background:#7C3AED;border:none;border-radius:8px;color:#fff;padding:10px 16px;font-size:16px;cursor:pointer;-webkit-appearance:none" onclick="uW(0.1)">+</button></div></div></div>`;
   el.innerHTML=htm;
 }
 function uH(k,d){const h=td().h;h[k]=Math.max(0,parseFloat(((h[k]||0)+d).toFixed(2)));save();rHealth();uHdr();}
 function uW(d){const h=td().h;h.wt=parseFloat(((h.wt||98)+d).toFixed(1));save();rHealth();}
 
-// FINANCE
+// Finance helpers
+function getDailyBudget(){
+  const mk2='monthbudget_'+monthKey();
+  const mb=D[mk2];
+  if(mb&&mb.daily) return mb.daily;
+  return 107;
+}
+function monthKey(){const d=new Date();return `${d.getFullYear()}_${d.getMonth()+1}`;}
+function mData(){const k='month_'+monthKey();if(!D[k])D[k]={cc:[]};return D[k];}
+function ccTotal(){return mData().cc.reduce((s,e)=>s+e.amt,0);}
+function ccBudgetUsed(){
+  // what % of next salary is already committed
+  return Math.round((ccTotal()/92000)*100);
+}
+
 function rFinance(){
   const el=document.getElementById('tab-finance');
-  const ts=tSpent(),over=ts>DB;
-  let h=`<div class="card" style="background:linear-gradient(135deg,${over?'#FEF0ED,#FEE2DD':'#EDF7F2,#D1FAE5'});border-color:${over?'#E8402A':'#2A9D5C'}44">
-    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-      <div><div style="font-size:9px;color:${over?'#E8402A':'#2A9D5C'};letter-spacing:2px;font-weight:700">SPENT TODAY</div><div style="font-size:30px;font-weight:800;color:${over?'#E8402A':'#1A1814'}">₹${ts}</div><div style="font-size:10px;color:#8A8070">Daily budget ₹${DB}</div></div>
-      <div style="text-align:right"><div style="font-size:9px;color:#C5BFB0;letter-spacing:2px">REMAINING</div><div style="font-size:30px;font-weight:800;color:${over?'#E8402A':'#2A9D5C'}">₹${Math.max(0,DB-ts)}</div><div style="font-size:10px;color:${over?'#E8402A':'#8A8070'}">${over?'OVER BUDGET ⚠️':'left today'}</div></div>
+  const ts=tSpent(),db=getDailyBudget(),over=ts>db;
+  const cc=mData().cc,cct=ccTotal();
+  let h=`
+  <!-- Monthly budget setup -->
+  <div class="card" style="background:#F5F3FF;border-color:#7C3AED44;margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:9px;color:#7C3AED;letter-spacing:2px;font-weight:700">JUNE DAILY BUDGET</div>
+        <div style="font-size:28px;font-weight:800;color:#7C3AED">₹${db}<span style="font-size:13px;color:#8A8070">/day</span></div>
+        <div style="font-size:10px;color:#8A8070">After petrol + groceries deducted</div>
+      </div>
+      <button style="background:#7C3AED;border:none;border-radius:8px;color:#fff;padding:8px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none" onclick="showBudgetSetup()">Update</button>
     </div>
-    <div class="pt" style="background:rgba(255,255,255,0.5)"><div class="pf" style="width:${Math.min(100,(ts/DB)*100)}%;background:${over?'#E8402A':'#2A9D5C'}"></div></div>
+  </div>
+
+  <!-- Daily cash summary -->
+  <div class="card" style="background:linear-gradient(135deg,${over?'#FEF0ED,#FEE2DD':'#EDF7F2,#D1FAE5'});border-color:${over?'#E8402A':'#2A9D5C'}44">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:9px;color:${over?'#E8402A':'#2A9D5C'};letter-spacing:2px;font-weight:700">CASH SPENT TODAY</div>
+        <div style="font-size:30px;font-weight:800;color:${over?'#E8402A':'#1A1814'}">₹${ts}</div>
+        <div style="font-size:10px;color:#8A8070">Daily budget ₹${db}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:9px;color:#C5BFB0;letter-spacing:2px">REMAINING</div>
+        <div style="font-size:30px;font-weight:800;color:${over?'#E8402A':'#2A9D5C'}">₹${Math.max(0,db-ts)}</div>
+        <div style="font-size:10px;color:${over?'#E8402A':'#8A8070'}">${over?'OVER BUDGET ⚠️':'left today'}</div>
+      </div>
+    </div>
+    <div class="pt" style="background:rgba(255,255,255,0.5)"><div class="pf" style="width:${Math.min(100,(ts/db)*100)}%;background:${over?'#E8402A':'#2A9D5C'}"></div></div>
   </div>`;
+
+  // Cash expenses today
   if(td().fin.length){
-    h+=`<div class="slbl">TODAY'S EXPENSES</div>`;
+    h+=`<div class="slbl">CASH EXPENSES TODAY</div>`;
     td().fin.forEach(e=>{
       const cat=EC[e.cat]||EC.Other;
       h+=`<div class="card" style="display:flex;align-items:center;gap:12px"><div style="font-size:24px">${cat.i}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${e.desc}</div><div style="display:flex;gap:6px;margin-top:4px;align-items:center"><span class="pill" style="background:${cat.c}18;color:${cat.c}">${e.cat}</span><span style="font-size:9px;color:#C5BFB0">${e.time}</span></div></div><div style="font-size:15px;font-weight:800;color:#E8402A">₹${e.amt}</div></div>`;
     });
   }
+
+  // Credit card section
+  h+=`
+  <div class="card" style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-color:#2563EB44;margin-top:6px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+      <div>
+        <div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700">ICICI CREDIT CARD</div>
+        <div style="font-size:28px;font-weight:800;color:#2563EB">₹${cct.toLocaleString()}</div>
+        <div style="font-size:10px;color:#8A8070">Due by 8 July · Limit ₹4,30,000</div>
+        <div style="font-size:11px;color:${ccBudgetUsed()>30?'#E8402A':'#2563EB'};font-weight:700;margin-top:4px">${ccBudgetUsed()}% of July salary committed</div>
+      </div>
+      <button style="background:#2563EB;border:none;border-radius:8px;color:#fff;padding:8px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none" onclick="showCC=true;rFinance()">+ Add</button>
+    </div>
+    <div class="pt" style="background:rgba(255,255,255,0.5)"><div class="pf" style="width:${Math.min(100,ccBudgetUsed()*3)}%;background:${ccBudgetUsed()>30?'#E8402A':'#2563EB'}"></div></div>
+  </div>`;
+
+  // CC expenses this month
+  if(cc.length){
+    h+=`<div class="slbl">CREDIT CARD THIS MONTH</div>`;
+    cc.forEach(e=>{
+      const cat=EC[e.cat]||EC.Other;
+      h+=`<div class="card" style="display:flex;align-items:center;gap:12px;border-left:3px solid #2563EB"><div style="font-size:24px">${cat.i}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${e.desc}</div><div style="display:flex;gap:6px;margin-top:4px;align-items:center"><span class="pill" style="background:#EFF6FF;color:#2563EB">CREDIT CARD</span><span style="font-size:9px;color:#C5BFB0">${e.date}</span></div></div><div style="font-size:15px;font-weight:800;color:#2563EB">₹${e.amt}</div></div>`;
+    });
+  }
+
+  // Add CC expense form
+  if(showCC){
+    h+=`<div class="iform" style="border-color:#2563EB44">
+      <div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG CREDIT CARD EXPENSE</div>
+      <div style="background:#FFFBEB;border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#D97706;font-weight:600">⚠️ Necessary purchases only. This reduces July salary available.</div>
+      <label class="flbl">WHAT DID YOU BUY?</label>
+      <input type="text" id="ccd" placeholder="e.g. Groceries - Blinkit" style="margin-bottom:10px">
+      <label class="flbl">AMOUNT (₹)</label>
+      <input type="number" id="cca" placeholder="e.g. 950" style="margin-bottom:12px">
+      <label class="flbl" style="margin-bottom:8px">CATEGORY</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+        ${Object.entries(EC).map(([cat,{c}])=>`<button class="cbtn${selCCCat===cat?' selected':''}" style="${selCCCat===cat?`background:${c};color:#fff;border-color:${c}`:''};" onclick="selCCCat='${cat}';rFinance()">${cat}</button>`).join('')}
+      </div>
+      <div class="brow">
+        <button class="bp" style="background:#2563EB" onclick="logCC()">LOG ✓</button>
+        <button class="bs" onclick="showCC=false;rFinance()">CANCEL</button>
+      </div>
+    </div>`;
+  }
+
+  // Add cash expense form
   if(showExp){
     const cb=Object.entries(EC).map(([cat,{c}])=>`<button class="cbtn${selCat===cat?' selected':''}" style="${selCat===cat?`background:${c};color:#fff;border-color:${c}`:''};" onclick="selCat='${cat}';rFinance()">${cat}</button>`).join('');
-    h+=`<div class="iform" style="margin-top:8px">
-      <div style="font-size:9px;color:#E8402A;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG EXPENSE</div>
-      <label class="flbl">WHAT DID YOU SPEND ON?</label>
-      <input type="text" id="ed" placeholder="e.g. Petrol, groceries, chai" style="margin-bottom:10px">
-      <label class="flbl">AMOUNT (₹)</label>
-      <input type="number" id="ea" placeholder="e.g. 150" style="margin-bottom:12px">
-      <label class="flbl" style="margin-bottom:8px">CATEGORY</label>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">${cb}</div>
-      <div class="brow"><button class="bp" style="background:#E8402A" onclick="logExp()">LOG ✓</button><button class="bs" onclick="showExp=false;rFinance()">CANCEL</button></div>
-    </div>`;
+    h+=`<div class="iform" style="margin-top:8px"><div style="font-size:9px;color:#E8402A;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG CASH EXPENSE</div><label class="flbl">WHAT DID YOU SPEND ON?</label><input type="text" id="ed" placeholder="e.g. Petrol, chai" style="margin-bottom:10px"><label class="flbl">AMOUNT (₹)</label><input type="number" id="ea" placeholder="e.g. 150" style="margin-bottom:12px"><label class="flbl" style="margin-bottom:8px">CATEGORY</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">${cb}</div><div class="brow"><button class="bp" style="background:#E8402A" onclick="logExp()">LOG ✓</button><button class="bs" onclick="showExp=false;rFinance()">CANCEL</button></div></div>`;
   } else {
-    h+=`<button class="abtn" style="color:#E8402A;margin-top:4px" onclick="showExp=true;rFinance()">+ LOG EXPENSE</button>`;
+    h+=`<div style="display:flex;gap:8px;margin-top:8px">
+      <button class="abtn" style="color:#E8402A" onclick="showExp=true;showCC=false;rFinance()">+ CASH EXPENSE</button>
+      <button class="abtn" style="color:#2563EB" onclick="showCC=true;showExp=false;rFinance()">+ CREDIT CARD</button>
+    </div>`;
   }
   el.innerHTML=h;
 }
+
+function showBudgetSetup(){
+  const amt=prompt('Enter your daily budget for this month (₹):','107');
+  if(amt&&!isNaN(amt)){
+    const k='monthbudget_'+monthKey();
+    if(!D[k])D[k]={};
+    D[k].daily=parseInt(amt);
+    save();rFinance();
+  }
+}
+
 function logExp(){
   const desc=document.getElementById('ed')?.value.trim();
   const amt=parseInt(document.getElementById('ea')?.value);
@@ -666,45 +570,63 @@ function logExp(){
   save();showExp=false;rFinance();uHdr();
 }
 
+function logCC(){
+  const desc=document.getElementById('ccd')?.value.trim();
+  const amt=parseInt(document.getElementById('cca')?.value);
+  if(!desc||!amt)return;
+  const cat=EC[selCCCat]||EC.Other;
+  const d=new Date();
+  mData().cc.push({desc,amt,cat:selCCCat,icon:cat.i,date:`${d.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}`});
+  save();showCC=false;rFinance();
+}
+
 // GROCERY
 function rGrocery(){
   const el=document.getElementById('tab-grocery');
-  const checks=gChecks();
-  const total=GROCERY.reduce((s,g)=>s+g.items.length,0);
-  const done=Object.values(checks).filter(Boolean).length;
+  const gd=gData();
+  const total=gAll(),done=gChecked(),gt=gTotal();
   let h=`<div class="card" style="background:linear-gradient(135deg,#EDF7F2,#D1FAE5);border-color:#2A9D5C44">
-    <div style="display:flex;justify-content:space-between;align-items:center">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div>
         <div style="font-size:9px;color:#2A9D5C;letter-spacing:2px;font-weight:700">WEEKLY GROCERY</div>
-        <div style="font-size:28px;font-weight:800;color:#1A1814">${done}/${total}</div>
-        <div style="font-size:10px;color:#8A8070">items added to cart</div>
+        <div style="font-size:28px;font-weight:800">${done}/${total} items</div>
+        <div style="font-size:10px;color:#8A8070">ticked for Blinkit</div>
+        ${gt>0?`<div style="font-size:14px;color:#2A9D5C;font-weight:700;margin-top:6px">Total entered: ₹${gt.toFixed(0)}</div>`:''}
       </div>
-      <div style="text-align:right">
-        <div style="font-size:11px;color:#2A9D5C;font-weight:700">Est. ₹900–1,200</div>
-        <div style="font-size:9px;color:#8A8070;margin-top:4px">Blinkit order</div>
-        <button style="margin-top:8px;background:#2A9D5C;border:none;border-radius:8px;color:#fff;padding:8px 14px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none" onclick="resetGrocery()">Reset List</button>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        ${gt>0?`<button style="background:#2A9D5C;border:none;border-radius:8px;color:#fff;padding:9px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none" onclick="addGroceryToFinance()">→ Add ₹${gt.toFixed(0)} to Finance</button>`:''}
+        <button style="background:#fff;border:1.5px solid #EDE9E0;border-radius:8px;color:#8A8070;padding:7px 12px;font-size:10px;cursor:pointer;font-family:inherit;-webkit-appearance:none" onclick="resetGrocery()">Reset Week</button>
       </div>
     </div>
-    <div class="pt" style="background:rgba(255,255,255,0.5);margin-top:10px">
-      <div class="pf" style="width:${Math.min(100,(done/total)*100)}%;background:#2A9D5C"></div>
-    </div>
+    <div class="pt" style="background:rgba(255,255,255,0.5);margin-top:10px"><div class="pf" style="width:${Math.min(100,(done/total)*100)}%;background:#2A9D5C"></div></div>
   </div>
-  <div style="background:#FFFBEB;border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:#D97706;font-weight:600">
-    🛒 Tap each item to mark as added to Blinkit cart. List resets every week automatically.
+  <div style="background:#EFF6FF;border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:#2563EB;font-weight:600">
+    📱 Tap item to tick · Enter price after ordering · Tap "Add to Finance" when done
   </div>`;
 
   GROCERY.forEach((cat,ci)=>{
-    h+=`<div class="gcat">
-      <div class="gcat-hdr" style="color:${cat.color};background:${cat.bg}">${cat.cat}</div>`;
+    h+=`<div class="gcat"><div class="gcat-hdr" style="color:${cat.color};background:${cat.bg}">${cat.cat}</div>`;
     cat.items.forEach((item,ii)=>{
       const key=`${ci}_${ii}`;
-      const checked=!!checks[key];
-      h+=`<div class="gitem${checked?' checked':''}" onclick="toggleGrocery('${key}')">
-        <div class="gcheck">${checked?'✓':''}</div>
-        <div class="gname">${item.n}</div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <div class="gqty">${item.q}</div>
-          ${item.flag?`<span class="gflag">${item.flag}</span>`:''}
+      const checked=!!gd.checks[key];
+      const price=gd.prices[key]||'';
+      const isMonthly=!!item.monthly;
+      h+=`<div class="gitem${checked?' checked':''}${isMonthly?' monthly':''}">
+        <div class="grow" onclick="toggleGrocery('${key}')">
+          <div class="gcheck">${checked?'✓':''}</div>
+          <div style="flex:1">
+            <div class="gname">${item.n}</div>
+            <div class="gdish">${item.dishes}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+            <div class="gqty">${item.q}</div>
+            ${item.flag?`<span class="gflag" style="background:#FEF0ED;color:#E8402A">${item.flag}</span>`:''}
+            ${isMonthly?`<span class="gflag" style="background:#F5F3FF;color:#7C3AED">Monthly</span>`:''}
+          </div>
+        </div>
+        <div class="gprice-row">
+          <div class="gprice-lbl">Price paid (₹)</div>
+          <input class="gprice-input" type="number" placeholder="0" value="${price}" onchange="setPrice('${key}',this.value)" onclick="event.stopPropagation()">
         </div>
       </div>`;
     });
@@ -712,67 +634,38 @@ function rGrocery(){
   });
   el.innerHTML=h;
 }
-function toggleGrocery(key){
-  const wk='grocery_'+weekKey();
-  if(!D[wk])D[wk]={};
-  D[wk][key]=!D[wk][key];
-  save();rGrocery();
+function toggleGrocery(key){const gd=gData();gd.checks[key]=!gd.checks[key];save();rGrocery();}
+function setPrice(key,val){const gd=gData();gd.prices[key]=val;save();
+  // update total display without full re-render
+  const gt=gTotal();
+  rGrocery();
+}
+function addGroceryToFinance(){
+  const gt=gTotal();
+  if(gt<=0)return;
+  td().fin.push({desc:'Weekly Groceries — Blinkit',amt:Math.round(gt),cat:'Groceries',icon:'🛒',time:now()});
+  save();
+  alert(`₹${Math.round(gt)} added to Finance as Weekly Groceries!`);
+  uHdr();
 }
 function resetGrocery(){
-  if(confirm('Reset grocery list? All ticks will be cleared.')){
-    D['grocery_'+weekKey()]={};
+  if(confirm('Reset this week\'s grocery list?')){
+    const k='g_'+weekKey();
+    D[k]={checks:{},prices:{}};
     save();rGrocery();
   }
 }
 
-// INSIGHTS
 function rInsights(){
   const el=document.getElementById('tab-insights');
   const al=align(),tc=tCal(),ts=tSpent(),h=td().h,sm=sMins(),fa=fAdh();
   const ac=al>=80?'#2A9D5C':al>=60?'#D97706':'#E8402A';
   const late=sched.filter(i=>td().sc[i.id]?.status==='late').length;
   const w=td().sc['wake'];
-  let htm=`<div class="card" style="background:${ac}15;border:1.5px solid ${ac}44;text-align:center;padding:24px 16px">
-    <div style="font-size:9px;color:${ac};letter-spacing:3px;font-weight:700;margin-bottom:8px">TODAY'S ALIGNMENT</div>
-    <div style="font-size:64px;font-weight:800;color:${ac};line-height:1">${al}%</div>
-    <div style="font-size:13px;color:#8A8070;margin-top:8px">${dTasks()} of ${sched.length} tasks · ${late} ran late</div>
-    <div style="background:rgba(255,255,255,0.6);border-radius:8px;height:8px;margin-top:12px">
-      <div style="height:8px;border-radius:8px;width:${al}%;background:${ac};transition:width 0.5s"></div>
-    </div>
-  </div>
-  <div class="slbl" style="margin-top:16px">BREAKDOWN</div>`;
-  [{l:'Calories',v:`${tc}`,n:`Target ${TC} · ${Math.max(0,TC-tc)} remaining`,c:tc<=TC?'#2A9D5C':'#E8402A'},
-   {l:'Food Adherence',v:`${fa}%`,n:`${td().food.filter(f=>!f.dev).length} on-plan · ${td().food.filter(f=>f.dev).length} deviated`,c:fa>=80?'#2A9D5C':'#D97706'},
-   {l:'Study',v:`${sm}m`,n:`${sp.s} · target 60min`,c:sm>=60?'#2A9D5C':sm>0?'#D97706':'#E8402A'},
-   {l:'Money Spent',v:`₹${ts}`,n:`Budget ₹${DB}/day`,c:ts<=DB?'#2A9D5C':'#E8402A'},
-   {l:'Cigarettes',v:String(h.cigs),n:'Target ≤ 4 today',c:h.cigs<=4?'#2A9D5C':'#E8402A'},
-   {l:'Nicotine Gum',v:String(h.gum||0),n:'Use before every craving',c:'#0D9488'},
-   {l:'Steps',v:(h.steps||0).toLocaleString(),n:'Target 6,000+',c:(h.steps||0)>=6000?'#2A9D5C':'#D97706'},
-  ].forEach(({l,v,n,c})=>{
-    htm+=`<div class="irow"><div><div style="font-size:13px;font-weight:500">${l}</div><div style="font-size:10px;color:#8A8070;margin-top:2px">${n}</div></div><div style="font-size:18px;font-weight:800;color:${c};flex-shrink:0;margin-left:12px">${v}</div></div>`;
-  });
-  const verdict=al>=80&&tc<=TC&&h.cigs<=4?'🌟 Outstanding day. High alignment, calories controlled, smoking on target.'
-    :al>=60?`✅ Acceptable. ${late>0?`${late} task(s) late. `:''}${tc>TC?`Calories over by ${tc-TC}. `:''}${h.cigs>4?'Cigs over target. ':''}Tighten tomorrow.`
-    :'⚠️ Below threshold. Something broke. Identify it before sleeping. Reset tomorrow.';
-  htm+=`<div class="card" style="margin-top:16px;background:${al>=60?'#EDF7F2':'#FEF0ED'};border-color:${al>=60?'#2A9D5C':'#E8402A'}44">
-    <div style="font-size:9px;color:${al>=60?'#2A9D5C':'#E8402A'};letter-spacing:2px;font-weight:700;margin-bottom:8px">TODAY'S VERDICT</div>
-    <div style="font-size:13px;color:#1A1814;line-height:1.8">${verdict}</div>
-  </div>
-  <div class="card" style="margin-top:10px;background:#EFF6FF;border-color:#2563EB44">
-    <div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">📋 NIGHTLY REPORT — COPY + SEND</div>
-    <div class="rbox">
-Wake:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${w?.time||'___'}<br>
-Walk:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${td().sc['walk']?'Y ✓':'N'}<br>
-Breakfast:&nbsp;${td().sc['bfast']?'Y ✓':'N'}<br>
-Study:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${sm>0?`Y · ${sp.s} · ${sm}min`:'N'}<br>
-Cigs:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${h.cigs}<br>
-Gum:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${h.gum||0} pieces<br>
-Calories:&nbsp;&nbsp;${tc}<br>
-Spent:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹${ts}<br>
-Steps:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${(h.steps||0).toLocaleString()}<br>
-Alignment:&nbsp;${al}%
-    </div>
-  </div>`;
+  let htm=`<div class="card" style="background:${ac}15;border:1.5px solid ${ac}44;text-align:center;padding:24px 16px"><div style="font-size:9px;color:${ac};letter-spacing:3px;font-weight:700;margin-bottom:8px">TODAY'S ALIGNMENT</div><div style="font-size:64px;font-weight:800;color:${ac};line-height:1">${al}%</div><div style="font-size:13px;color:#8A8070;margin-top:8px">${dTasks()} of ${sched.length} tasks · ${late} ran late</div><div style="background:rgba(255,255,255,0.6);border-radius:8px;height:8px;margin-top:12px"><div style="height:8px;border-radius:8px;width:${al}%;background:${ac};transition:width 0.5s"></div></div></div><div class="slbl" style="margin-top:16px">BREAKDOWN</div>`;
+  [{l:'Calories',v:`${tc}`,n:`Target ${TC} · ${Math.max(0,TC-tc)} remaining`,c:tc<=TC?'#2A9D5C':'#E8402A'},{l:'Food Adherence',v:`${fa}%`,n:`${td().food.filter(f=>!f.dev).length} on-plan · ${td().food.filter(f=>f.dev).length} deviated`,c:fa>=80?'#2A9D5C':'#D97706'},{l:'Study',v:`${sm}m`,n:`${sp.s} · target 60min`,c:sm>=60?'#2A9D5C':sm>0?'#D97706':'#E8402A'},{l:'Money Spent',v:`₹${ts}`,n:`Budget ₹${DB}/day`,c:ts<=DB?'#2A9D5C':'#E8402A'},{l:'Cigarettes',v:String(h.cigs),n:'Target ≤ 4 today',c:h.cigs<=4?'#2A9D5C':'#E8402A'},{l:'Nicotine Gum',v:String(h.gum||0),n:'Use before every craving',c:'#0D9488'},{l:'Steps',v:(h.steps||0).toLocaleString(),n:'Target 6,000+',c:(h.steps||0)>=6000?'#2A9D5C':'#D97706'}].forEach(({l,v,n,c})=>{htm+=`<div class="irow"><div><div style="font-size:13px;font-weight:500">${l}</div><div style="font-size:10px;color:#8A8070;margin-top:2px">${n}</div></div><div style="font-size:18px;font-weight:800;color:${c};flex-shrink:0;margin-left:12px">${v}</div></div>`;});
+  const verdict=al>=80&&tc<=TC&&h.cigs<=4?'🌟 Outstanding day. High alignment, calories controlled, smoking on target.':al>=60?`✅ Acceptable. ${late>0?`${late} task(s) late. `:''}${tc>TC?`Calories over by ${tc-TC}. `:''}${h.cigs>4?'Cigs over target. ':''}Tighten tomorrow.`:'⚠️ Below threshold. Something broke. Identify it before sleeping. Reset tomorrow.';
+  htm+=`<div class="card" style="margin-top:16px;background:${al>=60?'#EDF7F2':'#FEF0ED'};border-color:${al>=60?'#2A9D5C':'#E8402A'}44"><div style="font-size:9px;color:${al>=60?'#2A9D5C':'#E8402A'};letter-spacing:2px;font-weight:700;margin-bottom:8px">TODAY'S VERDICT</div><div style="font-size:13px;color:#1A1814;line-height:1.8">${verdict}</div></div><div class="card" style="margin-top:10px;background:#EFF6FF;border-color:#2563EB44"><div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">📋 NIGHTLY REPORT — COPY + SEND</div><div class="rbox">Wake:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${w?.time||'___'}<br>Walk:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${td().sc['walk']?'Y ✓':'N'}<br>Breakfast:&nbsp;${td().sc['bfast']?'Y ✓':'N'}<br>Study:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${sm>0?`Y · ${sp.s} · ${sm}min`:'N'}<br>Cigs:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${h.cigs}<br>Gum:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${h.gum||0} pieces<br>Calories:&nbsp;&nbsp;${tc}<br>Spent:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹${ts}<br>Steps:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${(h.steps||0).toLocaleString()}<br>Alignment:&nbsp;${al}%</div></div>`;
   el.innerHTML=htm;
 }
 
