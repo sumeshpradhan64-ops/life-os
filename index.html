@@ -310,10 +310,25 @@ let D={},curTab='today',selCat='Groceries',studyOn=null,studyIv=null,studyEl=0;
 let openLogId=null,openFoodType=null,foodDev=false,showUnplan=false,showExp=false,showCC=false,selCCCat='Groceries';
 const dow=new Date().getDay(),sched=getSched(dow),fp=FP[dow],sp=SP[dow];
 
-function tKey(){return new Date().toISOString().slice(0,10);}
+function tKey(){
+  const d=new Date();
+  const yr=d.getFullYear();
+  const mo=String(d.getMonth()+1).padStart(2,'0');
+  const dy=String(d.getDate()).padStart(2,'0');
+  return `${yr}-${mo}-${dy}`;
+}
 function now(){const d=new Date();return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 function td(){return D[tKey()];}
-function weekKey(){const d=new Date();const day=d.getDay();const diff=d.getDate()-day+(day===0?-6:1);const mon=new Date(new Date().setDate(new Date().getDate()-new Date().getDay()+(new Date().getDay()===0?-6:1)));return mon.toISOString().slice(0,10);}
+function weekKey(){
+  const d=new Date();
+  const day=d.getDay();
+  const diff=d.getDate()-day+(day===0?-6:1);
+  const mon=new Date(d);mon.setDate(diff);
+  const yr=mon.getFullYear();
+  const mo=String(mon.getMonth()+1).padStart(2,'0');
+  const dy=String(mon.getDate()).padStart(2,'0');
+  return `${yr}-${mo}-${dy}`;
+}
 function gData(){const k='g_'+weekKey();if(!D[k])D[k]={checks:{},prices:{}};return D[k];}
 
 function load(){
