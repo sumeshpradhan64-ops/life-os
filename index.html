@@ -106,8 +106,7 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
     <div class="stat"><div class="sv" id="sTasks">0/0</div><div class="sl">TASKS</div></div>
     <div class="stat"><div class="sv" id="sCal">0</div><div class="sl">CAL</div></div>
     <div class="stat"><div class="sv" id="sSpent">₹0</div><div class="sl">SPENT</div></div>
-    <div class="stat"><div class="sv" id="sCigs">0</div><div class="sl">CIGS</div></div>
-    <div class="stat"><div class="sv" id="sGum">0</div><div class="sl">GUM</div></div>
+    <div class="stat"><div class="sv" id="sSteps">0</div><div class="sl">STEPS</div></div>
   </div>
   <div class="tabs">
     <button class="tab active" onclick="showTab('today')">☀️ Today</button>
@@ -357,10 +356,8 @@ function uHdr(){
   document.getElementById('sCal').style.color=tc>TC?'#E8402A':'#2A9D5C';
   document.getElementById('sSpent').textContent='₹'+ts;
   document.getElementById('sSpent').style.color=ts>DB?'#E8402A':'#2A9D5C';
-  document.getElementById('sCigs').textContent=h.cigs;
-  document.getElementById('sCigs').style.color=h.cigs<=4?'#2A9D5C':'#E8402A';
-  document.getElementById('sGum').textContent=h.gum||0;
-  document.getElementById('sGum').style.color='#0D9488';
+  document.getElementById('sSteps').textContent=(h.steps||0).toLocaleString();
+  document.getElementById('sSteps').style.color=(h.steps||0)>=6000?'#2A9D5C':'#D97706';
 }
 
 function showTab(n){
@@ -581,6 +578,20 @@ function rFood(){
       }
     }
   });
+  // Tomorrow's meal preview
+  const tmrw2=new Date();tmrw2.setDate(tmrw2.getDate()+1);
+  const tmrwDow2=tmrw2.getDay();
+  const tmrwPlan=FP[tmrwDow2];
+  const tmrwName=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][tmrwDow2];
+  h+=`<div class="card" style="background:#F5F3FF;border-color:#7C3AED44;margin-top:4px">
+    <div style="font-size:9px;color:#7C3AED;letter-spacing:2px;font-weight:700;margin-bottom:10px">👀 TOMORROW — ${tmrwName.toUpperCase()}</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div><span class="pill" style="background:#FFFBEB;color:#D97706;margin-right:6px">BREAKFAST</span><span style="font-size:12px">${tmrwPlan.b.n}</span><div style="font-size:10px;color:#8A8070;margin-top:2px">${tmrwPlan.b.g}g · ~${Math.round(tmrwPlan.b.c*tmrwPlan.b.g)} cal</div></div>
+      <div><span class="pill" style="background:#EDF7F2;color:#2A9D5C;margin-right:6px">LUNCH</span><span style="font-size:12px">${tmrwPlan.l.n}</span><div style="font-size:10px;color:#8A8070;margin-top:2px">${tmrwPlan.l.g}g · ~${Math.round(tmrwPlan.l.c*tmrwPlan.l.g)} cal</div></div>
+      <div><span class="pill" style="background:#EFF6FF;color:#2563EB;margin-right:6px">DINNER</span><span style="font-size:12px">${tmrwPlan.d.n}</span><div style="font-size:10px;color:#8A8070;margin-top:2px">${tmrwPlan.d.g}g · ~${Math.round(tmrwPlan.d.c*tmrwPlan.d.g)} cal</div></div>
+    </div>
+  </div>`;
+
   h+=`<div style="margin-top:8px"><div class="slbl">SNACKS / EXTRAS</div>`;
   td().food.filter(f=>f.type==='other').forEach(f=>{h+=`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px">${f.name}</div><div style="font-size:10px;color:#8A8070">${f.grams}g · ${f.time}</div></div><div style="font-size:13px;font-weight:700;color:#D97706">${f.cal} cal</div></div>`;});
   if(openFoodType==='other'){
@@ -615,9 +626,9 @@ function rHealth(){
   const el=document.getElementById('tab-health');
   const h=td().h;
   let htm=`<div class="slbl">DAILY HEALTH</div>`;
-  [{k:'cigs',l:'CIGARETTES',i:'🚭',u:'smoked today',t:'≤ 4/day',s:1,f:v=>v},{k:'gum',l:'NICOTINE GUM',i:'🟢',u:'pieces used today',t:'Use before every craving',s:1,f:v=>v},{k:'steps',l:'STEPS',i:'👟',u:'steps today',t:'6,000+',s:500,f:v=>v.toLocaleString()}].forEach(({k,l,i,u,t,s,f})=>{
-    const fc=k==='cigs'&&h.cigs>4?'#E8402A':(k==='cigs'?'#2A9D5C':(k==='gum'?'#0D9488':(h.steps>=6000?'#2A9D5C':'#D97706')));
-    const fbg=k==='cigs'&&h.cigs>4?'#FEF0ED':(k==='cigs'?'#EDF7F2':(k==='gum'?'#F0FDFA':(h.steps>=6000?'#EDF7F2':'#FFFBEB')));
+  [{k:'steps',l:'STEPS',i:'👟',u:'steps today',t:'6,000+',s:500,f:v=>v.toLocaleString()}].forEach(({k,l,i,u,t,s,f})=>{
+    const fc=(h.steps||0)>=6000?'#2A9D5C':'#D97706';
+    const fbg=(h.steps||0)>=6000?'#EDF7F2':'#FFFBEB';
     htm+=`<div class="card" style="background:${fbg};border-color:${fc}33"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div><div style="font-size:9px;color:${fc};letter-spacing:2px;font-weight:700">${l}</div><div style="font-size:34px;font-weight:800;color:${fc};line-height:1.1">${f(h[k]||0)}</div><div style="font-size:10px;color:#8A8070">${u} · ${t}</div></div><div style="font-size:38px">${i}</div></div><div class="hbtns"><button class="hb" style="background:#fff;border:1.5px solid #EDE9E0;color:#1A1814" onclick="uH('${k}',${-s})">−</button><button class="hb" style="background:${fc};color:#fff" onclick="uH('${k}',${s})">+</button></div></div>`;
   });
   const wt=h.wt||98;
@@ -893,15 +904,15 @@ function rReports(){
       const cal=dd.food.reduce((s,f)=>s+f.cal,0);
       const spent=dd.fin.reduce((s,e)=>s+e.amt,0);
       const sm=dd.study.reduce((s,x)=>s+x.mins,0);
-      const cigs=dd.h?.cigs||0;
+
       const wt=dd.h?.wt||0;
-      days.push({date:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}),dow:dow2,al,cal,spent,sm,cigs,wt,key});
+      days.push({date:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}),dow:dow2,al,cal,spent,sm,wt,key});
     }
   }
 
   const avgAl=days.length?Math.round(days.reduce((s,d)=>s+d.al,0)/days.length):0;
   const avgCal=days.length?Math.round(days.reduce((s,d)=>s+d.cal,0)/days.length):0;
-  const avgCigs=days.length?Math.round(days.reduce((s,d)=>s+d.cigs,0)/days.length*10)/10:0;
+
   const totalStudy=days.reduce((s,d)=>s+d.sm,0);
   const totalSpent=days.reduce((s,d)=>s+d.spent,0);
   const bestDay=days.length?days.reduce((a,b)=>a.al>b.al?a:b):null;
@@ -922,11 +933,7 @@ function rReports(){
       <div style="font-size:24px;font-weight:800;color:#7C3AED">${totalStudy}m</div>
       <div style="font-size:9px;color:#8A8070">this week</div>
     </div>
-    <div class="card" style="text-align:center;padding:12px">
-      <div style="font-size:9px;color:#E8402A;letter-spacing:2px;font-weight:700">AVG CIGS</div>
-      <div style="font-size:24px;font-weight:800;color:${avgCigs<=4?'#2A9D5C':'#E8402A'}">${avgCigs}</div>
-      <div style="font-size:9px;color:#8A8070">per day</div>
-    </div>
+
     <div class="card" style="text-align:center;padding:12px">
       <div style="font-size:9px;color:#D97706;letter-spacing:2px;font-weight:700">AVG CAL</div>
       <div style="font-size:24px;font-weight:800;color:${avgCal<=1700?'#2A9D5C':'#E8402A'}">${avgCal}</div>
@@ -967,7 +974,6 @@ function rReports(){
       </div>
       <div style="display:flex;gap:12px;font-size:10px;color:#8A8070">
         <span>📚 ${d.sm}m</span>
-        <span>🔥 ${d.cigs} cigs</span>
         <span>🍽️ ${d.cal} cal</span>
         <span>💰 ₹${d.spent}</span>
       </div>
