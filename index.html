@@ -121,6 +121,7 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
     <button class="tab" onclick="showTab('grocery')">🛒 Grocery</button>
     <button class="tab" onclick="showTab('reports')">📈 Reports</button>
     <button class="tab" onclick="showTab('settings')">⚙️ Settings</button>
+    <button class="tab" onclick="showTab('fridge')">🧊 Fridge</button>
   </div>
 </div>
 <div class="content">
@@ -133,6 +134,7 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
   <div id="tab-grocery" class="hidden"></div>
   <div id="tab-reports" class="hidden"></div>
   <div id="tab-settings" class="hidden"></div>
+  <div id="tab-fridge" class="hidden"></div>
 </div>
 <div class="bbar"><div style="font-size:9px;color:var(--faint);letter-spacing:2px" id="bDate"></div></div>
 
@@ -202,48 +204,42 @@ const GROCERY=[
 ];
 
 const FP={
-  // Portions recalculated to hit 1,500-1,700 cal/day target
-  // Sunday
-  0:{
-    b:{n:"Vegetable Sandwich (3 slices) + Peanut Butter",c:2.8,g:150,note:"3 slices, spread peanut butter for extra protein"},
-    l:{n:"Vegetable Pulao + Raita + Dal",c:1.6,g:430,note:"Pulao 280g + Raita 100g + Dal 50g on side"},
-    d:{n:"Vegetable Pulao + Dal",c:1.5,g:300,note:"Pulao 200g + Dal 100g for protein"},
+  // Default rotation — replaced by Fridge tab plan when used
+  // All days target 1500-1700 cal
+  0:{// Sunday
+    b:{n:"Vegetable Sandwich (3 slices) + Peanut Butter",c:2.8,g:150},
+    l:{n:"Vegetable Pulao + Raita + Dal",c:1.6,g:430},
+    d:{n:"Vegetable Pulao + Dal (half carbs)",c:1.5,g:300},
   },
-  // Monday
-  1:{
-    b:{n:"Sattu + Water + Banana + Peanuts",c:3.0,g:140,note:"Sattu 100g + 1 banana + 20g peanuts"},
-    l:{n:"Dal Tadka + Rice + Cabbage Sabzi + Curd",c:1.6,g:400,note:"Rice 200g + Dal 100g + Cabbage + Curd 100g"},
-    d:{n:"Dal + Cabbage Sabzi + Half Rice",c:1.5,g:280,note:"Same dal + sabzi, rice reduced to 100g"},
+  1:{// Monday
+    b:{n:"Sattu + Water + Banana + Peanuts",c:3.0,g:140},
+    l:{n:"Dal Tadka + Rice + Cabbage Sabzi + Curd",c:1.6,g:400},
+    d:{n:"Dal + Cabbage Sabzi + Half Rice",c:1.5,g:280},
   },
-  // Tuesday
-  2:{
-    b:{n:"Poha + Curd + Banana",c:1.5,g:280,note:"Poha 180g + Curd 100g + 1 banana for extra cal"},
-    l:{n:"Chole + 2 Chapati + Salad + Curd",c:1.9,g:350,note:"Chole 200g + 2 chapati + salad + curd 100g"},
-    d:{n:"Chole + 1 Chapati + Salad",c:1.8,g:250,note:"Reduced chapati, same chole"},
+  2:{// Tuesday
+    b:{n:"Poha + Curd + Banana",c:1.5,g:280},
+    l:{n:"Chole + 2 Chapati + Salad + Curd",c:1.9,g:350},
+    d:{n:"Chole + 1 Chapati + Salad",c:1.8,g:250},
   },
-  // Wednesday
-  3:{
-    b:{n:"Bread 3 slices + Peanut Butter + Banana",c:3.0,g:150,note:"3 slices bread + generous PB + 1 banana"},
-    l:{n:"Chana Curry + Rice + Dal + Salad",c:1.6,g:400,note:"Chana 150g + Rice 180g + Dal 70g + salad"},
-    d:{n:"Chana Curry + Half Rice + Salad",c:1.5,g:310,note:"Chana 180g + 130g rice"},
+  3:{// Wednesday
+    b:{n:"Bread 3 slices + Peanut Butter + Banana",c:3.0,g:150},
+    l:{n:"Chana Curry + Rice + Dal + Salad",c:1.6,g:400},
+    d:{n:"Chana Curry + Half Rice + Salad",c:1.5,g:310},
   },
-  // Thursday — Murmura too light, adding sattu
-  4:{
-    b:{n:"Murmura + Curd + Sattu + Banana",c:2.0,g:200,note:"Murmura 100g + Curd 100g + Sattu 30g + banana — Murmura alone too light"},
-    l:{n:"Rajma + 2 Chapati + Onion Salad + Curd",c:1.9,g:380,note:"Rajma 200g + 2 chapati + salad + curd 100g. Soak Wed night."},
-    d:{n:"Rajma + 1 Chapati + Salad",c:1.8,g:260,note:"Rajma + 1 chapati only"},
+  4:{// Thursday
+    b:{n:"Murmura + Curd + Sattu + Banana",c:2.0,g:200},
+    l:{n:"Rajma + 2 Chapati + Onion Salad + Curd",c:1.9,g:380},
+    d:{n:"Rajma + 1 Chapati + Salad",c:1.8,g:260},
   },
-  // Friday
-  5:{
-    b:{n:"Ragi Sattu + Milk + Banana + Peanuts",c:2.8,g:150,note:"Ragi sattu 80g in milk + banana + 20g peanuts"},
-    l:{n:"Mixed Veg Curry + Rice + Dal + Curd",c:1.6,g:420,note:"Veg curry 150g + Rice 180g + Dal 70g + Curd 100g"},
-    d:{n:"Mixed Veg Curry + Half Rice",c:1.4,g:330,note:"Curry 180g + 150g rice. No curd at night."},
+  5:{// Friday
+    b:{n:"Ragi Sattu + Milk + Banana + Peanuts",c:2.8,g:150},
+    l:{n:"Mixed Veg Curry + Rice + Dal + Curd",c:1.6,g:420},
+    d:{n:"Mixed Veg Curry + Half Rice",c:1.4,g:330},
   },
-  // Saturday
-  6:{
-    b:{n:"Banana + Milk + Sattu + Peanuts",c:2.0,g:220,note:"Milk 200ml + Sattu 80g + 1 banana + 20g peanuts"},
-    l:{n:"Paneer Bhurji + 2 Chapati + Salad + Dal",c:2.1,g:340,note:"Paneer Bhurji 180g + 2 chapati + salad"},
-    d:{n:"Paneer Bhurji + 1 Chapati + Salad",c:2.0,g:220,note:"Paneer Bhurji 150g + 1 chapati. Best protein day."},
+  6:{// Saturday — LOCKED: Dalma + Rice + Curd + Saga Bhaja
+    b:{n:"Banana + Milk + Sattu + Peanuts",c:2.0,g:220},
+    l:{n:"Dalma + Rice + Curd + Saga Bhaja",c:1.5,g:420},
+    d:{n:"Dalma + Rice (half) — No curd",c:1.5,g:280},
   },
 };
 const SP={
@@ -260,18 +256,19 @@ const EC={"Food":{i:"🍱",c:"#2A9D5C"},"Transport":{i:"⛽",c:"#D97706"},"Groce
 function getSched(dow){
   const iO=[1,3,5].includes(dow),iW=[2,4].includes(dow),iWE=[0,6].includes(dow);
   const b=[
-    {id:"wake",t:"05:00",l:"Wake Up",i:"⏰",d:"Water immediately. Deep breath.",a:"#D97706"},
+    {id:"wake",t:"05:00",l:"Wake Up + Morning Drink",i:"⏰",d:"Water + lemon + honey immediately. Deep breath.",a:"#D97706"},
     {id:"broom",t:"05:05",l:"Brooming — 2BHK",i:"🧹",d:"Full house. 15 minutes.",a:"#0D9488"},
     {id:"walk",t:"05:25",l:`Walk ${iWE?45:30} min`,i:"🚶",d:"No phone. Steady pace.",a:"#2A9D5C"},
     {id:"bath",t:"06:00",l:"Bath",i:"🚿",d:"Quick. 15 minutes.",a:"#2563EB"},
-    {id:"prayer",t:"06:15",l:"Prayer",i:"🙏",d:"10 minutes. Do not skip.",a:"#7C3AED"},
-    {id:"cook",t:"06:25",l:"Cook Lunch + Dinner",i:"🍲",d:"Double quantity. 65 minutes. Dinner in fridge.",a:"#EA580C"},
-    {id:"bfast",t:"07:30",l:"Breakfast",i:"🥣",d:"As per today's plan. Eat it.",a:"#D97706"},
-    {id:"wash1",t:"07:45",l:"Wash Utensils",i:"🧽",d:"Kitchen clean before leaving.",a:"#0D9488"},
+    {id:"prayer",t:"06:15",l:"Prayer",i:"🙏",d:"15 minutes. Do not skip.",a:"#7C3AED"},
+    {id:"cook",t:"06:30",l:"Cook Lunch + Dinner",i:"🍲",d:"Double quantity. 80 minutes. Dinner in fridge.",a:"#EA580C"},
+    {id:"fruit",t:"07:50",l:"Morning Fruit",i:"🍎",d:"1 guava / papaya / pomegranate. Before breakfast.",a:"#2A9D5C"},
+    {id:"bfast",t:"07:55",l:"Breakfast",i:"🥣",d:"As per today's plan. Eat it.",a:"#D97706"},
+    {id:"wash1",t:"08:05",l:"Wash Utensils",i:"🧽",d:"Clean kitchen before getting ready.",a:"#0D9488"},
   ];
   if(iO) b.push(
-    {id:"ready",t:"08:05",l:"Get Ready",i:"👔",d:"Dress, pack bag, lunch box.",a:"#2563EB"},
-    {id:"leave",t:"09:00",l:"Leave Home",i:"🏢",d:"Leave by 9:00 AM.",a:"#2563EB"},
+    {id:"ready",t:"08:15",l:"Get Ready",i:"👔",d:"Dress, pack bag, lunch box. 15 minutes.",a:"#2563EB"},
+    {id:"leave",t:"09:00",l:"Leave Home",i:"🏢",d:"Hard limit. No later than 9:15.",a:"#2563EB"},
     {id:"dinner",t:"20:05",l:"Dinner (from fridge)",i:"🍽️",d:"Half carbs. No curd at night.",a:"#EA580C"},
     {id:"wash2",t:"20:25",l:"Wash Utensils",i:"🧽",d:"10 minutes. Done.",a:"#0D9488"},
     {id:"study",t:"20:45",l:"Study — MBA (1 hr)",i:"📚",d:"Phone away. Start now.",a:"#7C3AED"},
@@ -280,12 +277,14 @@ function getSched(dow){
     {id:"sleep",t:"22:15",l:"Lights Out",i:"🌙",d:"Phone away. Sleep.",a:"#8A8070"}
   );
   else if(iW) b.push(
+    {id:"amla",t:"06:00",l:"Amla Water",i:"🫙",d:"1 tsp amla powder in warm water. Lung detox.",a:"#2A9D5C"},
     {id:"work",t:"09:00",l:"Work Starts",i:"💻",d:"Sit at desk. No distractions.",a:"#2563EB"},
     {id:"lunch",t:"13:00",l:"Lunch Break",i:"🍽️",d:"30 min away from screen.",a:"#EA580C"},
     {id:"wend",t:"19:00",l:"Work Ends — Hard Stop",i:"✅",d:"Close laptop. Done.",a:"#2A9D5C"},
     {id:"dinner",t:"19:05",l:"Dinner (from fridge)",i:"🍽️",d:"Half carbs. No curd.",a:"#EA580C"},
     {id:"wash2",t:"19:25",l:"Wash Utensils",i:"🧽",d:"10 minutes.",a:"#0D9488"},
-    {id:"study",t:"19:35",l:"Study — SAP HCM (2hrs)",i:"📚",d:"Trainer video + notes.",a:"#7C3AED"},
+    {id:"eve_walk",t:"19:35",l:"Evening Walk — 30 min",i:"🚶",d:"Second walk of the day. Fresh air. No phone.",a:"#2A9D5C"},
+    {id:"study",t:"20:05",l:"Study — SAP HCM (2hrs)",i:"📚",d:"Trainer video + notes.",a:"#7C3AED"},
     {id:"calls",t:"21:35",l:"Family Calls",i:"📞",d:"Max 30 minutes.",a:"#2A9D5C"},
     {id:"report",t:"22:00",l:"Night Report",i:"📋",d:"Fill app. Log everything.",a:"#2563EB"},
     {id:"sleep",t:"22:15",l:"Lights Out",i:"🌙",d:"Phone away. Sleep.",a:"#8A8070"}
@@ -339,6 +338,7 @@ function load(){
   gData();
   mData();
   getSettings();
+  getFridgeData();
   // Set June budget
   const mk='monthbudget_'+monthKey();
   if(!D[mk])D[mk]={daily:61};
@@ -381,8 +381,8 @@ function uHdr(){
 
 function showTab(n){
   curTab=n;
-  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['today','food','study','health','finance','insights','grocery','reports','settings'][i]===n);});
-  ['today','food','study','health','finance','insights','grocery','reports','settings'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==n);});
+  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['today','food','study','health','finance','insights','grocery','reports','settings','fridge'][i]===n);});
+  ['today','food','study','health','finance','insights','grocery','reports','settings','fridge'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==n);});
   render(n);
 }
 function render(n){
@@ -395,6 +395,7 @@ function render(n){
   else if(n==='grocery')rGrocery();
   else if(n==='reports')rReports();
   else if(n==='settings')rSettings();
+  else if(n==='fridge')rFridge();
   uHdr();
 }
 
@@ -912,7 +913,8 @@ function rReports(){
   const days=[];
   for(let i=6;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
-    const key=d.toISOString().slice(0,10);
+    const yr=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),dy=String(d.getDate()).padStart(2,'0');
+    const key=`${yr}-${mo}-${dy}`;
     const dd=D[key];
     if(dd){
       const dow2=d.getDay();
@@ -1198,6 +1200,496 @@ function updateBudget(val){
   if(!D[mk2])D[mk2]={};
   D[mk2].daily=s.dailybudget;
   saveSettings();
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// MEAL PLANNING SYSTEM — Fridge Based
+// ═══════════════════════════════════════════════════════════════
+
+const MEAL_LIB = {
+  dal:[
+    {name:"Dal Tadka + Rice + Salad",veg:[],protein:"dal",carb:"rice",c:1.5,g:400},
+    {name:"Masoor Dal + Rice + Sabzi",veg:[],protein:"dal",carb:"rice",c:1.4,g:400},
+    {name:"Moong Dal + Chapati + Sabzi",veg:[],protein:"dal",carb:"chapati",c:1.4,g:380},
+    {name:"Adrak Dal + Rice",veg:[],protein:"dal",carb:"rice",c:1.5,g:400,note:"Extra ginger — good for lungs"},
+    {name:"Lehsun Dal + Chapati",veg:[],protein:"dal",carb:"chapati",c:1.5,g:380,note:"High garlic — clears lungs"},
+    {name:"Methi Dal + Rice",veg:["methi"],protein:"dal",carb:"rice",c:1.4,g:400,note:"Iron rich"},
+    {name:"Drumstick Dal + Rice",veg:["drumstick"],protein:"dal",carb:"rice",c:1.4,g:400,note:"Lung detox"},
+    {name:"Dalma + Rice + Papad",veg:["potato","raw_banana","brinjal","raw_papaya"],protein:"dal",carb:"rice",c:1.5,g:400,odia:true,minVeg:1,sat:false},
+  ],
+  legume:[
+    {name:"Chole + 2 Chapati + Salad",veg:[],protein:"chole",carb:"chapati",c:1.8,g:350,soak:true,soakItem:"Chole (chickpeas)"},
+    {name:"Rajma + 2 Chapati + Salad",veg:[],protein:"rajma",carb:"chapati",c:1.8,g:350,soak:true,soakItem:"Rajma (kidney beans)"},
+    {name:"Chana Curry + Rice + Salad",veg:[],protein:"chana",carb:"rice",c:1.7,g:380},
+    {name:"Black Chana + Chapati + Raita",veg:[],protein:"black_chana",carb:"chapati",c:1.7,g:360},
+    {name:"Buta Dali + Rice + Salad",veg:[],protein:"buta_dali",carb:"rice",c:1.7,g:380,odia:true,soak:true,soakItem:"Buta Dali (whole black chana)"},
+    {name:"Guguni + Chapati",veg:[],protein:"guguni",carb:"chapati",c:1.8,g:350,odia:true,soak:true,soakItem:"Guguni (yellow peas)"},
+  ],
+  veg:[
+    {name:"Aloo Gobi + Chapati + Dal",veg:["cauliflower","potato"],protein:"dal",carb:"chapati",c:1.5,g:400},
+    {name:"Palak Dal + Rice",veg:["spinach"],protein:"dal",carb:"rice",c:1.4,g:420},
+    {name:"Bhindi Masala + Chapati + Dal",veg:["bhindi"],protein:"dal",carb:"chapati",c:1.4,g:380},
+    {name:"Mixed Veg Curry + Rice",veg:["cauliflower","potato"],protein:"none",carb:"rice",c:1.4,g:400},
+    {name:"Cabbage Sabzi + Dal + Rice",veg:["cabbage"],protein:"dal",carb:"rice",c:1.4,g:420},
+    {name:"Aloo Capsicum + Chapati + Dal",veg:["capsicum","potato"],protein:"dal",carb:"chapati",c:1.5,g:390},
+    {name:"Brinjal Bharta + Chapati + Dal",veg:["brinjal"],protein:"dal",carb:"chapati",c:1.4,g:390},
+    {name:"Cauliflower Peas + Rice + Dal",veg:["cauliflower"],protein:"dal",carb:"rice",c:1.4,g:400},
+    {name:"Beans Sabzi + Rice + Dal",veg:["beans"],protein:"dal",carb:"rice",c:1.4,g:400},
+    {name:"Raw Papaya Sabzi + Chapati + Dal",veg:["raw_papaya"],protein:"dal",carb:"chapati",c:1.4,g:390,odia:true},
+    {name:"Aloo Parwal + Chapati + Dal",veg:["parwal","potato"],protein:"dal",carb:"chapati",c:1.5,g:390,odia:true},
+    {name:"Parwal Bhaja + Dal + Rice",veg:["parwal"],protein:"dal",carb:"rice",c:1.4,g:400,odia:true},
+    {name:"Aloo Methi + Chapati + Dal",veg:["methi","potato"],protein:"dal",carb:"chapati",c:1.5,g:390},
+    {name:"Tendli Sabzi + Chapati + Dal",veg:["tendli"],protein:"dal",carb:"chapati",c:1.4,g:380},
+    {name:"Carrot Peas Sabzi + Chapati + Dal",veg:["carrot","peas"],protein:"dal",carb:"chapati",c:1.5,g:390},
+    {name:"Mooli Sabzi + Chapati + Dal",veg:["radish"],protein:"dal",carb:"chapati",c:1.3,g:380,note:"Clears respiratory tract"},
+  ],
+  odia:[
+    {name:"Santula + Rice + Dal",veg:["potato","raw_banana","brinjal","raw_papaya","cauliflower","parwal"],protein:"dal",carb:"rice",c:1.4,g:420,odia:true,minVeg:2},
+    {name:"Besara + Rice + Saga Bhaja",veg:["spinach","raw_papaya"],protein:"none",carb:"rice",c:1.4,g:400,odia:true,minVeg:1},
+    {name:"Aloo Potala Rasa + Chapati + Dal",veg:["potato","raw_banana","parwal"],protein:"dal",carb:"chapati",c:1.5,g:400,odia:true,minVeg:1},
+    {name:"Kela Bhaja + Dal + Rice",veg:["raw_banana"],protein:"dal",carb:"rice",c:1.4,g:400,odia:true},
+    {name:"Saga Bhaja + Dal + Rice",veg:["spinach"],protein:"dal",carb:"rice",c:1.3,g:420,odia:true},
+  ],
+  paneer:[
+    {name:"Paneer Bhurji + 2 Chapati + Salad",veg:[],protein:"paneer",carb:"chapati",c:2.0,g:380},
+    {name:"Palak Paneer + 2 Chapati + Salad",veg:["spinach"],protein:"paneer",carb:"chapati",c:1.9,g:380},
+  ],
+  // Saturday is LOCKED — always Dalma + Rice + Curd + Saga Bhaja
+  saturday:{name:"Dalma + Rice + Curd + Saga Bhaja",veg:["potato","spinach"],protein:"dal",carb:"rice",c:1.5,g:420,odia:true,locked:true},
+};
+
+const BFAST_LIB = [
+  {name:"Sattu + Water + Banana + Peanuts",needs:["sattu","banana"],c:3.0,g:140},
+  {name:"Poha + Curd + Banana",needs:["poha","curd","banana"],c:1.5,g:280},
+  {name:"Bread 3 slices + Peanut Butter + Banana",needs:["bread","peanut_butter","banana"],c:3.0,g:150},
+  {name:"Murmura + Curd + Sattu + Banana",needs:["murmura","curd","sattu","banana"],c:2.0,g:200},
+  {name:"Ragi Sattu + Milk + Banana + Peanuts",needs:["ragi","milk","banana"],c:2.8,g:150},
+  {name:"Banana + Milk + Sattu + Peanuts",needs:["banana","milk","sattu"],c:2.0,g:220},
+  {name:"Vegetable Sandwich + Peanut Butter",needs:["bread","peanut_butter"],c:2.8,g:150},
+  {name:"Chuda + Curd + Banana",needs:["poha","curd","banana"],c:1.6,g:250},
+];
+
+const PANTRY = ["dal","rice","atta","sattu","bread","peanut_butter","onion","tomato","spices","oil","banana","curd","milk"];
+
+const PERISHABLE_ORDER = ["spinach","cucumber","bhindi","capsicum","cabbage","cauliflower","brinjal","raw_banana","raw_papaya","pumpkin","potato"];
+
+const GROCERY_DB = {
+  spinach:{name:"Palak (Spinach)",qty:"1 bunch",cat:"🥬 Vegetables",flag:""},
+  cabbage:{name:"Cabbage",qty:"1 whole",cat:"🥬 Vegetables",flag:""},
+  cauliflower:{name:"Cauliflower",qty:"1 whole",cat:"🥬 Vegetables",flag:""},
+  raw_papaya:{name:"Raw Papaya",qty:"1 small",cat:"🥬 Vegetables",flag:""},
+  raw_banana:{name:"Raw Banana (Kachha Kela)",qty:"2 pcs",cat:"🥬 Vegetables",flag:"Local market"},
+  cucumber:{name:"Cucumber",qty:"3 pcs",cat:"🥬 Vegetables",flag:""},
+  potato:{name:"Potato (Aloo)",qty:"500g",cat:"🥬 Vegetables",flag:""},
+  brinjal:{name:"Brinjal (Baingan)",qty:"2 pcs",cat:"🥬 Vegetables",flag:""},
+  bhindi:{name:"Bhindi (Okra)",qty:"250g",cat:"🥬 Vegetables",flag:""},
+  capsicum:{name:"Capsicum",qty:"2 pcs",cat:"🥬 Vegetables",flag:""},
+  drumstick:{name:"Drumstick (Sahjan)",qty:"4 pcs",cat:"🥬 Vegetables",flag:"Local market"},
+  tomato:{name:"Tomatoes",qty:"500g",cat:"🥬 Vegetables",flag:""},
+  onion:{name:"Onions",qty:"500g",cat:"🥬 Vegetables",flag:""},
+  banana:{name:"Banana",qty:"6-8 pcs",cat:"🍌 Fruits",flag:""},
+  curd:{name:"Curd",qty:"500g",cat:"🥛 Dairy",flag:""},
+  paneer:{name:"Paneer",qty:"200g",cat:"🥛 Dairy",flag:"Saturday only"},
+  rice:{name:"Basmati Rice",qty:"2 kg",cat:"🌾 Staples",flag:""},
+  atta:{name:"Whole Wheat Atta",qty:"1 kg",cat:"🌾 Staples",flag:""},
+  poha:{name:"Poha (Flattened Rice)",qty:"500g",cat:"🌾 Staples",flag:""},
+  murmura:{name:"Murmura (Puffed Rice)",qty:"200g",cat:"🌾 Staples",flag:""},
+  sattu:{name:"Sattu",qty:"500g",cat:"🌾 Staples",flag:""},
+  ragi:{name:"Ragi Flour",qty:"250g",cat:"🌾 Staples",flag:""},
+  bread:{name:"Bread (Whole Wheat)",qty:"1 loaf",cat:"🌾 Staples",flag:""},
+  toor_dal:{name:"Toor Dal",qty:"500g",cat:"🫘 Pulses",flag:""},
+  masoor_dal:{name:"Masoor Dal",qty:"250g",cat:"🫘 Pulses",flag:""},
+  moong_dal:{name:"Moong Dal",qty:"250g",cat:"🫘 Pulses",flag:""},
+  chole:{name:"Chole (Chickpeas)",qty:"250g",cat:"🫘 Pulses",flag:"Soak night before"},
+  rajma:{name:"Rajma (Kidney Beans)",qty:"250g",cat:"🫘 Pulses",flag:"Soak night before"},
+  chana:{name:"Chana Dal",qty:"250g",cat:"🫘 Pulses",flag:""},
+  black_chana:{name:"Black Chana",qty:"250g",cat:"🫘 Pulses",flag:""},
+  peanut_butter:{name:"Peanut Butter",qty:"1 jar",cat:"🫙 Extras",flag:""},
+  peanuts:{name:"Peanuts (roasted)",qty:"200g",cat:"🫙 Extras",flag:""},
+  jaggery:{name:"Jaggery (Gur)",qty:"small block",cat:"🫙 Extras",flag:""},
+  papad:{name:"Papad",qty:"1 pack",cat:"🫙 Extras",flag:""},
+  stress_gum:{name:"Stress relief gum",qty:"1 pack",cat:"🟢 Essentials",flag:"NON-NEGOTIABLE"},
+  // New vegetables
+  parwal:{name:"Parwal (Pointed Gourd)",qty:"250g",cat:"🥬 Vegetables",flag:""},
+  methi:{name:"Methi Leaves (Fenugreek)",qty:"1 bunch",cat:"🥬 Vegetables",flag:""},
+  tendli:{name:"Tendli (Ivy Gourd)",qty:"250g",cat:"🥬 Vegetables",flag:""},
+  radish:{name:"Radish (Mooli)",qty:"2 pcs",cat:"🥬 Vegetables",flag:""},
+  carrot:{name:"Carrot",qty:"4 pcs",cat:"🥬 Vegetables",flag:""},
+  peas:{name:"Green Peas (Matar)",qty:"200g frozen",cat:"🥬 Vegetables",flag:""},
+  drumstick:{name:"Drumstick (Sahjan)",qty:"4 pcs",cat:"🥬 Vegetables",flag:"Local market"},
+  // New pulses
+  buta_dali:{name:"Buta Dali (Whole Black Chana)",qty:"250g",cat:"🫘 Pulses",flag:"Soak night before"},
+  guguni:{name:"Guguni (Yellow Peas/Vatana)",qty:"250g",cat:"🫘 Pulses",flag:"Soak night before"},
+  // Fruits
+  guava:{name:"Guava (Amrud)",qty:"4-6 pcs",cat:"🍎 Fruits",flag:"Daily fruit"},
+  papaya_ripe:{name:"Ripe Papaya",qty:"1 small",cat:"🍎 Fruits",flag:"Lasts 3-4 days"},
+  pomegranate:{name:"Pomegranate (Anar)",qty:"1-2 pcs",cat:"🍎 Fruits",flag:"2-3x per week"},
+  // Health items
+  amla_powder:{name:"Amla Powder",qty:"1 pack (200g)",cat:"🟢 Essentials",flag:"Monthly buy — lasts 2 months"},
+  honey:{name:"Honey",qty:"1 small jar",cat:"🟢 Essentials",flag:"Morning drink"},
+  tulsi:{name:"Tulsi Leaves / Tulsi Tea",qty:"1 pack",cat:"🟢 Essentials",flag:"Morning tea after walk"},
+};
+
+const VEG_OPTIONS = [
+  {id:"spinach",label:"🥬 Palak (Spinach)"},
+  {id:"cabbage",label:"🥦 Cabbage"},
+  {id:"cauliflower",label:"🥦 Cauliflower"},
+  {id:"raw_papaya",label:"🍈 Raw Papaya"},
+  {id:"raw_banana",label:"🍌 Raw Banana"},
+  {id:"cucumber",label:"🥒 Cucumber"},
+  {id:"potato",label:"🥔 Potato (Aloo)"},
+  {id:"brinjal",label:"🍆 Brinjal (Baingan)"},
+  {id:"bhindi",label:"🫛 Bhindi (Okra)"},
+  {id:"capsicum",label:"🫑 Capsicum"},
+  {id:"parwal",label:"🫛 Parwal (Pointed Gourd)"},
+  {id:"methi",label:"🌿 Methi Leaves"},
+  {id:"tendli",label:"🫒 Tendli (Ivy Gourd)"},
+  {id:"radish",label:"🥕 Radish (Mooli)"},
+  {id:"carrot",label:"🥕 Carrot"},
+  {id:"peas",label:"🫛 Green Peas"},
+  {id:"drumstick",label:"🌿 Drumstick (Sahjan)"},
+  {id:"beans",label:"🫘 Beans"},
+];
+
+const PROTEIN_OPTIONS = [
+  {id:"paneer",label:"🧀 Paneer"},
+];
+
+function getFridgeData(){
+  if(!D['fridge'])D['fridge']={veg:[],protein:[],generated:false,plan:null,weekKey:''};
+  return D['fridge'];
+}
+
+function getMealPlan(){
+  const fd=getFridgeData();
+  if(fd.plan&&fd.weekKey===weekKey()) return fd.plan;
+  return null;
+}
+
+// Generate 7-day meal plan based on fridge contents
+function generateMealPlan(availableVeg, availableProtein, isEmpty){
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const plan=[];
+  
+  // Sort vegetables by perishability (most perishable first)
+  const sortedVeg=[...availableVeg].sort((a,b)=>{
+    const ai=PERISHABLE_ORDER.indexOf(a);
+    const bi=PERISHABLE_ORDER.indexOf(b);
+    return (ai===-1?99:ai)-(bi===-1?99:bi);
+  });
+
+  // Track which vegs have been used
+  const vegUsage={};
+  availableVeg.forEach(v=>vegUsage[v]=0);
+
+  const usedMealNames=new Set();
+  const usedVegOnDay={};
+
+  // Helper: find meal that uses given veg
+  function findMealForVeg(veg, dayIdx){
+    const allMeals=[...MEAL_LIB.veg,...MEAL_LIB.odia,...MEAL_LIB.dal,...MEAL_LIB.paneer];
+    const shuffled=allMeals.sort(()=>Math.random()-0.5);
+    
+    for(const meal of shuffled){
+      if(usedMealNames.has(meal.name)) continue;
+      
+      // Check veg requirement
+      if(meal.veg.length===0){
+        // Dal/legume based - always works
+        if(meal.protein==='paneer'&&!availableProtein.includes('paneer')) continue;
+        return meal;
+      }
+      
+      // Check if meal needs specific veg we have
+      const needed=meal.veg.filter(v=>availableVeg.includes(v));
+      if(needed.length>0||(meal.minVeg&&needed.length>=meal.minVeg)){
+        // Check no veg conflict on this day
+        const dayVeg=usedVegOnDay[dayIdx]||[];
+        const conflict=needed.some(v=>dayVeg.includes(v));
+        if(!conflict){
+          return meal;
+        }
+      }
+    }
+    return null;
+  }
+
+  // Helper: get best available meal
+  function getBestMeal(dayIdx, preferVeg){
+    // Try to use a vegetable that hasn't been used yet
+    for(const veg of sortedVeg){
+      if(vegUsage[veg]<2){ // Don't use same veg more than twice
+        const meal=findMealForVeg(veg, dayIdx);
+        if(meal){
+          meal.veg.forEach(v=>{
+            if(availableVeg.includes(v)){
+              vegUsage[v]=(vegUsage[v]||0)+1;
+              if(!usedVegOnDay[dayIdx])usedVegOnDay[dayIdx]=[];
+              usedVegOnDay[dayIdx].push(v);
+            }
+          });
+          usedMealNames.add(meal.name);
+          return meal;
+        }
+      }
+    }
+    
+    // Fallback: any unused meal
+    const allTypes=[...MEAL_LIB.dal,...MEAL_LIB.legume,...MEAL_LIB.veg];
+    const unused=allTypes.filter(m=>!usedMealNames.has(m.name));
+    if(unused.length>0){
+      const meal=unused[Math.floor(Math.random()*unused.length)];
+      usedMealNames.add(meal.name);
+      return meal;
+    }
+    
+    // Last resort
+    return MEAL_LIB.dal[0];
+  }
+
+  // Get random breakfast
+  const bfastUsed=new Set();
+  function getBreakfast(){
+    const available=BFAST_LIB.filter(b=>!bfastUsed.has(b.name));
+    if(!available.length){bfastUsed.clear();}
+    const pick=available[Math.floor(Math.random()*available.length)];
+    bfastUsed.add(pick.name);
+    return pick;
+  }
+
+  // Generate plan for 7 days
+  for(let i=0;i<7;i++){
+    // Saturday (index 5 = Saturday in Mon-Sun array) is LOCKED
+    if(i===5){
+      const satMeal=MEAL_LIB.saturday;
+      const bfast=getBreakfast();
+      plan.push({
+        day:days[i],
+        breakfast:bfast,
+        lunch:{...satMeal,portion:satMeal.g,cal:Math.round(satMeal.c*satMeal.g)},
+        dinner:{...satMeal,portion:Math.round(satMeal.g*0.65),cal:Math.round(satMeal.c*satMeal.g*0.65),note:"Half carbs. No curd."},
+        soakTonight:null,
+        locked:true,
+      });
+      continue;
+    }
+    const meal=getBestMeal(i);
+    const bfast=getBreakfast();
+    
+    // Check if meal needs soaking day before
+    let soakTonight=null;
+    if(i<6){
+      const nextMeal=getBestMeal(i+1);
+      if(nextMeal&&nextMeal.soak) soakTonight=nextMeal.soakItem;
+    }
+
+    plan.push({
+      day:days[i],
+      breakfast:bfast,
+      lunch:{...meal, portion:meal.g, cal:Math.round(meal.c*meal.g)},
+      dinner:{...meal, portion:Math.round(meal.g*0.65), cal:Math.round(meal.c*meal.g*0.65), note:"Half carbs. No curd."},
+      soakTonight,
+    });
+  }
+
+  return plan;
+}
+
+// Generate grocery list from meal plan
+function generateGroceryList(plan, availableVeg){
+  const needed=new Set();
+  
+  // Always need pantry staples
+  ['sattu','poha','murmura','ragi','bread','peanut_butter','banana','curd','toor_dal',
+   'masoor_dal','moong_dal','rice','atta','peanuts','papad','stress_gum'].forEach(i=>needed.add(i));
+
+  // Add items from meal plan
+  plan.forEach(day=>{
+    const meal=day.lunch;
+    // Add protein source
+    if(meal.protein&&meal.protein!=='dal'&&meal.protein!=='none'){
+      needed.add(meal.protein);
+    }
+    // Add vegetables not in fridge
+    meal.veg.forEach(v=>{
+      if(!availableVeg.includes(v)) needed.add(v);
+    });
+  });
+
+  // Remove what's already in fridge
+  availableVeg.forEach(v=>needed.delete(v));
+
+  // Build grocery list by category
+  const byCategory={};
+  needed.forEach(item=>{
+    const info=GROCERY_DB[item];
+    if(!info) return;
+    if(!byCategory[info.cat]) byCategory[info.cat]={};
+    byCategory[info.cat][item]=info;
+  });
+
+  return byCategory;
+}
+
+// FRIDGE TAB RENDER
+function rFridge(){
+  const el=document.getElementById('tab-fridge');
+  const fd=getFridgeData();
+  const existingPlan=getMealPlan();
+
+  if(existingPlan&&!fd.showSetup){
+    // Show current week's plan
+    renderFridgePlan(el, existingPlan, fd.availableVeg||[]);
+    return;
+  }
+
+  // Show fridge setup
+  let h=`
+  <div class="slbl">WHAT'S IN YOUR FRIDGE?</div>
+  <div style="background:#EFF6FF;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:#2563EB;font-weight:600">
+    📱 Select what vegetables you have → App generates your week's meal plan + grocery list automatically
+  </div>
+
+  <!-- Fridge Empty Button -->
+  <button onclick="generateEmpty()" style="width:100%;background:#FEF0ED;border:1.5px dashed #E8402A;border-radius:12px;padding:14px;font-size:13px;font-weight:700;color:#E8402A;cursor:pointer;font-family:inherit;-webkit-appearance:none;margin-bottom:12px">
+    🗑️ Fridge Empty — Generate Standard Plan + Full Grocery List
+  </button>
+
+  <div class="slbl">VEGETABLES I HAVE</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="vegPicker">`;
+
+  VEG_OPTIONS.forEach(v=>{
+    const selected=fd.veg&&fd.veg.includes(v.id);
+    h+=`<button onclick="toggleFridgeVeg('${v.id}')" style="padding:9px 13px;border-radius:20px;border:1.5px solid ${selected?'#2A9D5C':'#EDE9E0'};cursor:pointer;font-size:12px;font-family:inherit;font-weight:${selected?700:400};background:${selected?'#EDF7F2':'#fff'};color:${selected?'#2A9D5C':'#8A8070'};-webkit-appearance:none">${v.label}</button>`;
+  });
+
+  h+=`</div>
+
+  <div class="slbl">PROTEIN / SPECIAL</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">`;
+
+  PROTEIN_OPTIONS.forEach(p=>{
+    const selected=fd.protein&&fd.protein.includes(p.id);
+    h+=`<button onclick="toggleFridgeProtein('${p.id}')" style="padding:9px 13px;border-radius:20px;border:1.5px solid ${selected?'#7C3AED':'#EDE9E0'};cursor:pointer;font-size:12px;font-family:inherit;font-weight:${selected?700:400};background:${selected?'#F5F3FF':'#fff'};color:${selected?'#7C3AED':'#8A8070'};-webkit-appearance:none">${p.label}</button>`;
+  });
+
+  h+=`</div>
+
+  <button onclick="generateWithFridge()" style="width:100%;background:#2A9D5C;border:none;border-radius:12px;padding:14px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;-webkit-appearance:none">
+    ✨ Generate My Week's Plan
+  </button>`;
+
+  el.innerHTML=h;
+}
+
+function renderFridgePlan(el, plan, availableVeg){
+  const grocery=generateGroceryList(plan, availableVeg);
+  const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const today=new Date().getDay();
+  const dayMap={1:0,2:1,3:2,4:3,5:4,6:5,0:6};
+  const todayIdx=dayMap[today]||0;
+
+  let h=`
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="slbl" style="margin-bottom:0">THIS WEEK'S MEAL PLAN</div>
+    <button onclick="getFridgeData().showSetup=true;rFridge()" style="background:#F5F3FF;border:1px solid #7C3AED44;border-radius:8px;color:#7C3AED;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none">🔄 Regenerate</button>
+  </div>`;
+
+  plan.forEach((day,i)=>{
+    const isToday=i===todayIdx;
+    h+=`<div class="card" style="background:${isToday?'#EDF7F2':'#fff'};border-color:${isToday?'#2A9D5C44':'#EDE9E0'};margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:700;color:${isToday?'#2A9D5C':'#1A1814'}">${days[i]}</div>
+        ${isToday?'<span class="pill" style="background:#EDF7F2;color:#2A9D5C">TODAY</span>':''}
+      </div>
+      <div style="font-size:10px;color:#D97706;font-weight:700;margin-bottom:2px">🌅 BREAKFAST</div>
+      <div style="font-size:12px;color:#1A1814;margin-bottom:6px">${day.breakfast.name} <span style="color:#8A8070">(${Math.round(day.breakfast.c*day.breakfast.g)} cal)</span></div>
+      <div style="font-size:10px;color:#2A9D5C;font-weight:700;margin-bottom:2px">☀️ LUNCH</div>
+      <div style="font-size:12px;color:#1A1814;margin-bottom:6px">${day.lunch.name} <span style="color:#8A8070">(${day.lunch.cal} cal)</span></div>
+      <div style="font-size:10px;color:#2563EB;font-weight:700;margin-bottom:2px">🌙 DINNER</div>
+      <div style="font-size:12px;color:#1A1814">${day.lunch.name} — half carbs <span style="color:#8A8070">(${day.dinner.cal} cal)</span></div>
+      ${day.soakTonight?`<div style="margin-top:8px;background:#FFF7ED;border-radius:6px;padding:6px 10px;font-size:10px;color:#EA580C;font-weight:700">🫘 Soak tonight: ${day.soakTonight}</div>`:''}
+    </div>`;
+  });
+
+  // Grocery list
+  h+=`<div class="slbl" style="margin-top:16px">🛒 GROCERY LIST FOR THIS WEEK</div>
+  <div style="background:#EDF7F2;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:11px;color:#2A9D5C;font-weight:600">
+    Items already in your fridge are excluded. Only what you need to buy.
+  </div>`;
+
+  Object.entries(grocery).forEach(([cat,items])=>{
+    h+=`<div style="margin-bottom:12px"><div style="font-size:10px;letter-spacing:2px;font-weight:700;color:#8A8070;margin-bottom:6px">${cat}</div>`;
+    Object.entries(items).forEach(([id,info])=>{
+      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#fff;border-radius:8px;border:1px solid #EDE9E0;margin-bottom:4px">
+        <div><div style="font-size:12px;font-weight:500">${info.name}</div>${info.flag?`<div style="font-size:9px;color:#E8402A;font-weight:700;margin-top:1px">${info.flag}</div>`:''}</div>
+        <div style="font-size:11px;color:#8A8070;font-weight:600">${info.qty}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+
+  el.innerHTML=h;
+}
+
+function toggleFridgeVeg(id){
+  const fd=getFridgeData();
+  if(!fd.veg)fd.veg=[];
+  const idx=fd.veg.indexOf(id);
+  if(idx>=0) fd.veg.splice(idx,1);
+  else fd.veg.push(id);
+  save();rFridge();
+}
+
+function toggleFridgeProtein(id){
+  const fd=getFridgeData();
+  if(!fd.protein)fd.protein=[];
+  const idx=fd.protein.indexOf(id);
+  if(idx>=0) fd.protein.splice(idx,1);
+  else fd.protein.push(id);
+  save();rFridge();
+}
+
+function generateWithFridge(){
+  const fd=getFridgeData();
+  const veg=fd.veg||[];
+  const protein=fd.protein||[];
+  const plan=generateMealPlan(veg,protein,false);
+  fd.plan=plan;
+  fd.weekKey=weekKey();
+  fd.availableVeg=veg;
+  fd.showSetup=false;
+  save();
+  rFridge();
+  // Also update food tab
+  updateFoodFromPlan(plan);
+}
+
+function generateEmpty(){
+  const plan=generateMealPlan([],[],true);
+  const fd=getFridgeData();
+  fd.plan=plan;
+  fd.weekKey=weekKey();
+  fd.availableVeg=[];
+  fd.showSetup=false;
+  save();
+  rFridge();
+  updateFoodFromPlan(plan);
+}
+
+function updateFoodFromPlan(plan){
+  // Store generated plan so Food tab can use it
+  D['weekplan_'+weekKey()]=plan;
+  save();
+}
+
+function getTodayMeal(){
+  const plan=D['weekplan_'+weekKey()];
+  if(!plan) return null;
+  const today=new Date().getDay();
+  const dayMap={1:0,2:1,3:2,4:3,5:4,6:5,0:6};
+  return plan[dayMap[today]||0];
 }
 
 load();rToday();uHdr();
