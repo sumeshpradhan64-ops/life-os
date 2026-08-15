@@ -346,15 +346,28 @@ function load(){
 }
 function save(){try{localStorage.setItem(SK,JSON.stringify(D));}catch{}}
 
+function currentSched(){const spDay=getSpecialDay();return spDay?getSpecialSched():sched;}
+function getTodayFP(){
+  const weekPlan=D['weekplan_'+weekKey()];
+  const today=new Date().getDay();
+  const dayMap={1:0,2:1,3:2,4:3,5:4,6:5,0:6};
+  const todayMeal=weekPlan?weekPlan[dayMap[today]||0]:null;
+  return todayMeal ? {
+    b:{n:todayMeal.breakfast.name,c:todayMeal.breakfast.c,g:todayMeal.breakfast.g},
+    l:{n:todayMeal.lunch.name,c:todayMeal.lunch.c||1.5,g:todayMeal.lunch.portion||350},
+    d:{n:todayMeal.lunch.name+' — half carbs',c:todayMeal.dinner.c||1.5,g:todayMeal.dinner.portion||230},
+  } : fp;
+}
 function tCal(){return td().food.reduce((s,f)=>s+f.cal,0);}
 function tSpent(){return td().fin.reduce((s,e)=>s+e.amt,0);}
-function dTasks(){return sched.filter(i=>td().sc[i.id]).length;}
+function dTasks(){const cs=currentSched();return cs.filter(i=>td().sc[i.id]).length;}
 function sMins(){return td().study.reduce((s,x)=>s+x.mins,0);}
 function fAdh(){const f=td().food;if(!f.length)return 0;return Math.round(f.filter(x=>!x.dev).length/f.length*100);}
 function align(){
-  const done=sched.filter(i=>td().sc[i.id]&&td().sc[i.id].status!=='skipped').length;
-  const skipped=sched.filter(i=>td().sc[i.id]?.status==='skipped').length;
-  return Math.round((done+(skipped*0.5))/sched.length*100);
+  const cs=currentSched();
+  const done=cs.filter(i=>td().sc[i.id]&&td().sc[i.id].status!=='skipped').length;
+  const skipped=cs.filter(i=>td().sc[i.id]?.status==='skipped').length;
+  return Math.round((done+(skipped*0.5))/cs.length*100);
 }
 function gTotal(){const gd=gData();return Object.values(gd.prices).reduce((s,v)=>s+(parseFloat(v)||0),0);}
 function gChecked(){return Object.values(gData().checks).filter(Boolean).length;}
@@ -370,12 +383,12 @@ function uHdr(){
   document.getElementById('aPct').style.color=ac;
   document.getElementById('aCircle').style.borderColor=ac;
   const tc=tCal(),ts=tSpent(),h=td().h;
-  document.getElementById('sTasks').textContent=dTasks()+'/'+sched.length;
+  document.getElementById('sTasks').textContent=dTasks()+'/'+currentSched().length;
   document.getElementById('sTasks').style.color='#2563EB';
   document.getElementById('sCal').textContent=tc;
   document.getElementById('sCal').style.color=tc>TC?'#E8402A':'#2A9D5C';
   document.getElementById('sSpent').textContent='₹'+ts;
-  document.getElementById('sSpent').style.color=ts>DB?'#E8402A':'#2A9D5C';
+  document.getElementById('sSpent').style.color=ts>getDailyBudget()?'#E8402A':'#2A9D5C';
   document.getElementById('sSteps').textContent=(h.steps||0).toLocaleString();
   document.getElementById('sSteps').style.color=(h.steps||0)>=6000?'#2A9D5C':'#D97706';
 }
@@ -406,11 +419,12 @@ function getLiveNudge(){
   const t=now();
   const h=parseInt(t.split(':')[0]),m=parseInt(t.split(':')[1]);
   const mins=h*60+m;
+  const cs=currentSched();
 
   // Find current scheduled task
   let current=null,next=null,overdue=[];
-  for(let i=0;i<sched.length;i++){
-    const item=sched[i];
+  for(let i=0;i<cs.length;i++){
+    const item=cs[i];
     const it=item.t;
     const ih=parseInt(it.split(':')[0]),im=parseInt(it.split(':')[1]);
     const imins=ih*60+im;
@@ -520,7 +534,7 @@ function rToday(){
   }
 
   h+=`<div class="slbl">SCHEDULE — TAP LOG TO RECORD</div>`;
-  sched.forEach(item=>{
+  activeSched.forEach(item=>{
     const lg=td().sc[item.id],late=lg?.status==='late';
     const skipped=lg?.status==='skipped';
     const cls='si'+(lg?(late?' late':(skipped?' late':' ok')):'');
@@ -565,7 +579,7 @@ function cancelLog(){openLogId=null;rToday();}
 function confirmLog(id,skipped=false){
   const timeVal=document.getElementById('lt_'+id)?.value||now();
   const note=document.getElementById('ln_'+id)?.value||'';
-  const item=sched.find(i=>i.id===id);
+  const item=currentSched().find(i=>i.id===id);
   // 15 minute buffer — within 15 mins of scheduled = on time
   const [sh,sm]=item.t.split(':').map(Number);
   const [lh,lm]=timeVal.split(':').map(Number);
@@ -589,22 +603,11 @@ function rFood(){
   const tc=tCal(),fa=fAdh();
 
   // Use fridge-generated plan if available, else fall back to default FP
-  const weekPlan=D['weekplan_'+weekKey()];
-  const today=new Date().getDay();
-  const dayMap={1:0,2:1,3:2,4:3,5:4,6:5,0:6};
-  const todayIdx=dayMap[today]||0;
-  const todayMeal=weekPlan?weekPlan[todayIdx]:null;
-
-  // Build today's fp from fridge plan or default
-  const todayFP = todayMeal ? {
-    b: {n: todayMeal.breakfast.name, c: todayMeal.breakfast.c, g: todayMeal.breakfast.g},
-    l: {n: todayMeal.lunch.name, c: todayMeal.lunch.c||1.5, g: todayMeal.lunch.portion||350},
-    d: {n: todayMeal.lunch.name + ' — half carbs', c: todayMeal.dinner.c||1.5, g: todayMeal.dinner.portion||230},
-  } : fp;
+  const todayFP = getTodayFP();
 
   let h=`<div class="card" style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-color:rgba(217,119,6,0.3)"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><div><div style="font-size:9px;color:#D97706;letter-spacing:2px;font-weight:700">CALORIES TODAY</div><div style="font-size:30px;font-weight:800;color:${tc>TC?'#E8402A':'#1A1814'}">${tc}</div><div style="font-size:10px;color:#8A8070">Target: ${TC} cal/day</div></div><div style="text-align:right"><div style="font-size:9px;color:#0D9488;letter-spacing:2px;font-weight:700">ADHERENCE</div><div style="font-size:30px;font-weight:800;color:${fa>=80?'#2A9D5C':'#D97706'}">${fa}%</div><div style="font-size:10px;color:#8A8070">to plan</div></div></div><div class="pt" style="background:#FDE68A"><div class="pf" style="width:${Math.min(100,(tc/TC)*100)}%;background:${tc>TC?'#E8402A':'#2A9D5C'}"></div></div><div style="display:flex;justify-content:space-between;margin-top:6px"><div style="font-size:9px;color:#8A8070">0</div><div style="font-size:10px;color:#D97706;font-weight:700">${Math.max(0,TC-tc)} cal remaining</div><div style="font-size:9px;color:#8A8070">${TC}</div></div></div><div class="slbl">TODAY'S MEAL PLAN</div>`;
   [{key:'b',type:'breakfast',label:'BREAKFAST',bg:'#FFFBEB',ac:'#D97706'},{key:'l',type:'lunch',label:'LUNCH',bg:'#EDF7F2',ac:'#2A9D5C'},{key:'d',type:'dinner',label:'DINNER',bg:'#EFF6FF',ac:'#2563EB'}].forEach(({key,type,label,bg,ac})=>{
-    const plan=fp[key],logged=td().food.find(f=>f.type===type);
+    const plan=todayFP[key],logged=td().food.find(f=>f.type===type);
     h+=`<div class="card" style="background:${logged?bg:'#fff'};border-color:${logged?ac+'55':'#EDE9E0'}"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div style="flex:1"><div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;align-items:center"><span class="pill" style="background:${bg};color:${ac}">${label}</span>${logged?`<span class="pill" style="background:#EDF7F2;color:#2A9D5C">LOGGED ✓</span>`:''}${logged?.dev?`<span class="pill" style="background:#FFFBEB;color:#D97706">DEVIATED</span>`:''}</div><div style="font-size:13px;font-weight:500;line-height:1.5">${plan.n}</div><div style="font-size:10px;color:#8A8070;margin-top:4px">~${Math.round(plan.c*plan.g)} cal for ${plan.g}g</div>${logged?`<div style="font-size:11px;color:${ac};font-weight:700;margin-top:6px">${logged.grams}g = ${logged.cal} cal · ${logged.time}</div>`:''}</div>${!logged?`<button class="lbtn" style="background:${ac};margin-top:0" onclick="toggleFood('${type}')">LOG</button>`:''}</div></div>`;
     if(!logged&&openFoodType===type){
       if(!foodDev){
@@ -617,7 +620,14 @@ function rFood(){
   // Tomorrow's meal preview
   const tmrw2=new Date();tmrw2.setDate(tmrw2.getDate()+1);
   const tmrwDow2=tmrw2.getDay();
-  const tmrwPlan=FP[tmrwDow2];
+  const tmrwWeekPlan=D['weekplan_'+weekKey()];
+  const tmrwDayMap={1:0,2:1,3:2,4:3,5:4,6:5,0:6};
+  const tmrwMeal=tmrwWeekPlan?tmrwWeekPlan[tmrwDayMap[tmrwDow2]||0]:null;
+  const tmrwPlan = tmrwMeal ? {
+    b:{n:tmrwMeal.breakfast.name,g:tmrwMeal.breakfast.g,c:tmrwMeal.breakfast.c},
+    l:{n:tmrwMeal.lunch.name,g:tmrwMeal.lunch.portion||350,c:tmrwMeal.lunch.c||1.5},
+    d:{n:tmrwMeal.lunch.name+' — half carbs',g:tmrwMeal.dinner.portion||230,c:tmrwMeal.dinner.c||1.5},
+  } : FP[tmrwDow2];
   const tmrwName=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][tmrwDow2];
   h+=`<div class="card" style="background:#F5F3FF;border-color:#7C3AED44;margin-top:4px">
     <div style="font-size:9px;color:#7C3AED;letter-spacing:2px;font-weight:700;margin-bottom:10px">👀 TOMORROW — ${tmrwName.toUpperCase()}</div>
@@ -638,10 +648,10 @@ function rFood(){
   h+='</div>';
   el.innerHTML=h;
 }
-function uCalc(key,ac){const g=parseFloat(document.getElementById('fg')?.value)||0;const plan=fp[key];const el=document.getElementById('calShow');if(el&&plan)el.textContent=`= ~${Math.round(plan.c*g)} calories`;}
+function uCalc(key,ac){const g=parseFloat(document.getElementById('fg')?.value)||0;const plan=getTodayFP()[key];const el=document.getElementById('calShow');if(el&&plan)el.textContent=`= ~${Math.round(plan.c*g)} calories`;}
 function toggleFood(type){openFoodType=openFoodType===type?null:type;foodDev=false;rFood();}
 function cancelFood(){openFoodType=null;foodDev=false;rFood();}
-function confirmFood(type,key){const g=parseFloat(document.getElementById('fg')?.value);if(!g)return;const weekPlan2=D['weekplan_'+weekKey()];const today2=new Date().getDay();const dayMap2={1:0,2:1,3:2,4:3,5:4,6:5,0:6};const todayMeal2=weekPlan2?weekPlan2[dayMap2[today2]||0]:null;const todayFP2=todayMeal2?{b:{n:todayMeal2.breakfast.name,c:todayMeal2.breakfast.c,g:todayMeal2.breakfast.g},l:{n:todayMeal2.lunch.name,c:todayMeal2.lunch.c||1.5,g:todayMeal2.lunch.portion||350},d:{n:todayMeal2.lunch.name+' — half carbs',c:todayMeal2.dinner.c||1.5,g:todayMeal2.dinner.portion||230}}:fp;const plan=todayFP2[key];td().food.push({type,name:plan.n,grams:g,cal:Math.round(plan.c*g),time:now(),dev:false});save();cancelFood();}
+function confirmFood(type,key){const g=parseFloat(document.getElementById('fg')?.value);if(!g)return;const plan=getTodayFP()[key];td().food.push({type,name:plan.n,grams:g,cal:Math.round(plan.c*g),time:now(),dev:false});save();cancelFood();}
 function confirmFoodDev(type){const name=document.getElementById('fn')?.value.trim();const grams=parseFloat(document.getElementById('fg2')?.value);const calIn=parseInt(document.getElementById('fc')?.value)||0;if(!name||!grams)return;td().food.push({type,name,grams,cal:calIn||Math.round(grams*1.5),time:now(),dev:true});save();cancelFood();}
 
 function fmtEl(){return `${String(Math.floor(studyEl/60)).padStart(2,'0')}:${String(studyEl%60).padStart(2,'0')}`;}
@@ -1275,6 +1285,21 @@ const MEAL_LIB = {
   saturday:{name:"Dalma + Rice + Curd + Saga Bhaja",veg:["potato","spinach"],protein:"dal",carb:"rice",c:1.5,g:420,odia:true,locked:true},
 };
 
+// NON-VEG — only used on days explicitly turned on (Wed/Fri/Sun).
+// Kept lean/high-protein and calorie-light for weight loss — grilled/curry style, minimal oil, modest carbs.
+// chicken/egg/prawn are everyday options; mutton/fish are rare (weighted low, higher cal).
+const NONVEG_LIB = [
+  {name:"Grilled Chicken + Salad + Dal",veg:[],protein:"chicken",carb:"none",c:1.2,g:350},
+  {name:"Chicken Curry (light oil) + Rice",veg:[],protein:"chicken",carb:"rice",c:1.5,g:380},
+  {name:"Egg Bhurji + 2 Chapati + Salad",veg:[],protein:"egg",carb:"chapati",c:1.5,g:320},
+  {name:"Egg Curry + Rice",veg:[],protein:"egg",carb:"rice",c:1.6,g:360},
+  {name:"Boiled Eggs + Chapati + Salad",veg:[],protein:"egg",carb:"chapati",c:1.3,g:300},
+  {name:"Prawn Curry (light oil) + Rice",veg:[],protein:"prawn",carb:"rice",c:1.4,g:350},
+  {name:"Prawn Masala + Chapati + Salad",veg:[],protein:"prawn",carb:"chapati",c:1.5,g:340},
+  {name:"Mutton Curry + Rice",veg:[],protein:"mutton",carb:"rice",c:1.9,g:320,rare:true,note:"Occasional — higher cal, smaller portion"},
+  {name:"Fish Curry + Rice",veg:[],protein:"fish",carb:"rice",c:1.4,g:370,rare:true},
+];
+
 const BFAST_LIB = [
   {name:"Sattu + Water + Banana + Peanuts",needs:["sattu","banana"],c:3.0,g:140},
   {name:"Poha + Curd + Banana",needs:["poha","curd","banana"],c:1.5,g:280},
@@ -1345,6 +1370,12 @@ const GROCERY_DB = {
   amla_powder:{name:"Amla Powder",qty:"1 pack (200g)",cat:"🟢 Essentials",flag:"Monthly buy — lasts 2 months"},
   honey:{name:"Honey",qty:"1 small jar",cat:"🟢 Essentials",flag:"Morning drink"},
   tulsi:{name:"Tulsi Leaves / Tulsi Tea",qty:"1 pack",cat:"🟢 Essentials",flag:"Morning tea after walk"},
+  // Non-veg — only appear when a non-veg day is turned on
+  chicken:{name:"Chicken",qty:"350-400g",cat:"🍗 Non-Veg",flag:""},
+  egg:{name:"Eggs",qty:"4-6 pcs",cat:"🍗 Non-Veg",flag:""},
+  prawn:{name:"Prawns",qty:"250g",cat:"🍗 Non-Veg",flag:"Buy fresh, day of"},
+  mutton:{name:"Mutton",qty:"300g",cat:"🍗 Non-Veg",flag:"Buy fresh, day of — occasional"},
+  fish:{name:"Fish",qty:"350g",cat:"🍗 Non-Veg",flag:"Buy fresh, day of — occasional"},
 };
 
 const VEG_OPTIONS = [
@@ -1384,10 +1415,13 @@ function getMealPlan(){
 }
 
 // Generate 7-day meal plan based on fridge contents
-function generateMealPlan(availableVeg, availableProtein, isEmpty){
+// nonvegDays: {2:true/false, 4:true/false, 6:true/false} — Wed/Fri/Sun indices in the Mon-Sun array below.
+// Only days explicitly turned on get a non-veg suggestion; everything else stays veg.
+const NONVEG_DAY_IDX=[2,4,6]; // Wed, Fri, Sun
+function generateMealPlan(availableVeg, availableProtein, isEmpty, nonvegDays){
+  nonvegDays=nonvegDays||{};
   const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const plan=[];
-  
+
   // Sort vegetables by perishability (most perishable first)
   const sortedVeg=[...availableVeg].sort((a,b)=>{
     const ai=PERISHABLE_ORDER.indexOf(a);
@@ -1401,25 +1435,27 @@ function generateMealPlan(availableVeg, availableProtein, isEmpty){
 
   const usedMealNames=new Set();
   const usedVegOnDay={};
+  const usedNonveg=new Set();
 
   // Helper: find meal that uses given veg
   function findMealForVeg(veg, dayIdx){
     const allMeals=[...MEAL_LIB.veg,...MEAL_LIB.odia,...MEAL_LIB.dal,...MEAL_LIB.paneer];
-    const shuffled=allMeals.sort(()=>Math.random()-0.5);
-    
+    const shuffled=[...allMeals].sort(()=>Math.random()-0.5);
+
     for(const meal of shuffled){
       if(usedMealNames.has(meal.name)) continue;
-      
+
       // Check veg requirement
       if(meal.veg.length===0){
         // Dal/legume based - always works
         if(meal.protein==='paneer'&&!availableProtein.includes('paneer')) continue;
         return meal;
       }
-      
-      // Check if meal needs specific veg we have
+
+      // Check if meal needs specific veg we have, and respects any minimum veg count
       const needed=meal.veg.filter(v=>availableVeg.includes(v));
-      if(needed.length>0||(meal.minVeg&&needed.length>=meal.minVeg)){
+      const meetsMin=!meal.minVeg||needed.length>=meal.minVeg;
+      if(needed.length>0&&meetsMin){
         // Check no veg conflict on this day
         const dayVeg=usedVegOnDay[dayIdx]||[];
         const conflict=needed.some(v=>dayVeg.includes(v));
@@ -1431,8 +1467,8 @@ function generateMealPlan(availableVeg, availableProtein, isEmpty){
     return null;
   }
 
-  // Helper: get best available meal
-  function getBestMeal(dayIdx, preferVeg){
+  // Helper: get best available veg meal
+  function getBestMeal(dayIdx){
     // Try to use a vegetable that hasn't been used yet
     for(const veg of sortedVeg){
       if(vegUsage[veg]<2){ // Don't use same veg more than twice
@@ -1450,7 +1486,7 @@ function generateMealPlan(availableVeg, availableProtein, isEmpty){
         }
       }
     }
-    
+
     // Fallback: any unused meal
     const allTypes=[...MEAL_LIB.dal,...MEAL_LIB.legume,...MEAL_LIB.veg];
     const unused=allTypes.filter(m=>!usedMealNames.has(m.name));
@@ -1459,53 +1495,66 @@ function generateMealPlan(availableVeg, availableProtein, isEmpty){
       usedMealNames.add(meal.name);
       return meal;
     }
-    
+
     // Last resort
     return MEAL_LIB.dal[0];
+  }
+
+  // Helper: pick a non-veg meal — chicken/egg/prawn most of the time, mutton/fish rarely
+  function getNonvegMeal(){
+    const common=NONVEG_LIB.filter(m=>!m.rare&&!usedNonveg.has(m.name));
+    const rare=NONVEG_LIB.filter(m=>m.rare&&!usedNonveg.has(m.name));
+    let pool=Math.random()<0.85?common:rare;
+    if(!pool.length) pool=common.length?common:rare;
+    if(!pool.length) pool=NONVEG_LIB;
+    const pick=pool[Math.floor(Math.random()*pool.length)];
+    usedNonveg.add(pick.name);
+    return pick;
   }
 
   // Get random breakfast
   const bfastUsed=new Set();
   function getBreakfast(){
     const available=BFAST_LIB.filter(b=>!bfastUsed.has(b.name));
-    if(!available.length){bfastUsed.clear();}
-    const pick=available[Math.floor(Math.random()*available.length)];
+    const pool=available.length?available:BFAST_LIB;
+    const pick=pool[Math.floor(Math.random()*pool.length)];
     bfastUsed.add(pick.name);
+    if(!available.length) bfastUsed.clear();
     return pick;
   }
 
-  // Generate plan for 7 days
+  // PASS 1 — decide every day's main meal FIRST, with no side-effect "peeking".
+  // (Previously the soak-check called getBestMeal(i+1) just to look, which mutated
+  // usage tracking and meant the meal actually served the next day could differ
+  // from the one the soak reminder was based on.)
+  const dayMeals=[];
   for(let i=0;i<7;i++){
-    // Saturday (index 5 = Saturday in Mon-Sun array) is LOCKED
-    if(i===5){
-      const satMeal=MEAL_LIB.saturday;
-      const bfast=getBreakfast();
-      plan.push({
-        day:days[i],
-        breakfast:bfast,
-        lunch:{...satMeal,portion:satMeal.g,cal:Math.round(satMeal.c*satMeal.g)},
-        dinner:{...satMeal,portion:Math.round(satMeal.g*0.65),cal:Math.round(satMeal.c*satMeal.g*0.65),note:"Half carbs. No curd."},
-        soakTonight:null,
-        locked:true,
-      });
-      continue;
+    if(i===5){ dayMeals.push(MEAL_LIB.saturday); continue; } // Saturday locked
+    if(NONVEG_DAY_IDX.includes(i)&&nonvegDays[i]){
+      dayMeals.push(getNonvegMeal());
+    } else {
+      dayMeals.push(getBestMeal(i));
     }
-    const meal=getBestMeal(i);
+  }
+
+  // PASS 2 — build the plan and derive soak reminders from the already-fixed next day
+  const plan=[];
+  for(let i=0;i<7;i++){
+    const meal=dayMeals[i];
     const bfast=getBreakfast();
-    
-    // Check if meal needs soaking day before
     let soakTonight=null;
     if(i<6){
-      const nextMeal=getBestMeal(i+1);
+      const nextMeal=dayMeals[i+1];
       if(nextMeal&&nextMeal.soak) soakTonight=nextMeal.soakItem;
     }
-
     plan.push({
       day:days[i],
       breakfast:bfast,
       lunch:{...meal, portion:meal.g, cal:Math.round(meal.c*meal.g)},
       dinner:{...meal, portion:Math.round(meal.g*0.65), cal:Math.round(meal.c*meal.g*0.65), note:"Half carbs. No curd."},
       soakTonight,
+      locked:i===5,
+      nonveg: NONVEG_DAY_IDX.includes(i)&&!!nonvegDays[i],
     });
   }
 
@@ -1592,6 +1641,19 @@ function rFridge(){
 
   h+=`</div>
 
+  <div class="slbl">NON-VEG THIS WEEK?</div>
+  <div style="background:#FFF7ED;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:11px;color:#EA580C;font-weight:600">
+    🍗 Turn ON only the days you'll actually eat non-veg. Chicken/egg/prawn are suggested most; mutton/fish occasionally. Off days stay veg — keeps this within your weight-loss calorie target.
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:16px">`;
+
+  [[2,'WED'],[4,'FRI'],[6,'SUN']].forEach(([idx,lbl])=>{
+    const on=!!(fd.nonveg&&fd.nonveg[idx]);
+    h+=`<button onclick="toggleNonvegDay(${idx})" style="flex:1;padding:11px 8px;border-radius:10px;border:1.5px solid ${on?'#EA580C':'#EDE9E0'};cursor:pointer;font-size:12px;font-family:inherit;font-weight:700;background:${on?'#FFF7ED':'#fff'};color:${on?'#EA580C':'#8A8070'};-webkit-appearance:none">${lbl}<div style="font-size:9px;margin-top:2px;font-weight:400">${on?'🍗 Non-veg':'Veg'}</div></button>`;
+  });
+
+  h+=`</div>
+
   <button onclick="generateWithFridge()" style="width:100%;background:#2A9D5C;border:none;border-radius:12px;padding:14px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;-webkit-appearance:none">
     ✨ Generate My Week's Plan
   </button>`;
@@ -1617,7 +1679,7 @@ function renderFridgePlan(el, plan, availableVeg){
     h+=`<div class="card" style="background:${isToday?'#EDF7F2':'#fff'};border-color:${isToday?'#2A9D5C44':'#EDE9E0'};margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-size:13px;font-weight:700;color:${isToday?'#2A9D5C':'#1A1814'}">${days[i]}</div>
-        ${isToday?'<span class="pill" style="background:#EDF7F2;color:#2A9D5C">TODAY</span>':''}
+        <div style="display:flex;gap:6px">${day.nonveg?'<span class="pill" style="background:#FFF7ED;color:#EA580C">🍗 NON-VEG</span>':''}${isToday?'<span class="pill" style="background:#EDF7F2;color:#2A9D5C">TODAY</span>':''}</div>
       </div>
       <div style="font-size:10px;color:#D97706;font-weight:700;margin-bottom:2px">🌅 BREAKFAST</div>
       <div style="font-size:12px;color:#1A1814;margin-bottom:6px">${day.breakfast.name} <span style="color:#8A8070">(${Math.round(day.breakfast.c*day.breakfast.g)} cal)</span></div>
@@ -1667,11 +1729,18 @@ function toggleFridgeProtein(id){
   save();rFridge();
 }
 
+function toggleNonvegDay(idx){
+  const fd=getFridgeData();
+  if(!fd.nonveg)fd.nonveg={};
+  fd.nonveg[idx]=!fd.nonveg[idx];
+  save();rFridge();
+}
+
 function generateWithFridge(){
   const fd=getFridgeData();
   const veg=fd.veg||[];
   const protein=fd.protein||[];
-  const plan=generateMealPlan(veg,protein,false);
+  const plan=generateMealPlan(veg,protein,false,fd.nonveg||{});
   fd.plan=plan;
   fd.weekKey=weekKey();
   fd.availableVeg=veg;
@@ -1683,8 +1752,8 @@ function generateWithFridge(){
 }
 
 function generateEmpty(){
-  const plan=generateMealPlan([],[],true);
   const fd=getFridgeData();
+  const plan=generateMealPlan([],[],true,fd.nonveg||{});
   fd.plan=plan;
   fd.weekKey=weekKey();
   fd.availableVeg=[];
