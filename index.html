@@ -108,7 +108,6 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
   <div class="stats">
     <div class="stat"><div class="sv" id="sTasks">0/0</div><div class="sl">TASKS</div></div>
     <div class="stat"><div class="sv" id="sCal">0</div><div class="sl">CAL</div></div>
-    <div class="stat"><div class="sv" id="sSpent">₹0</div><div class="sl">SPENT</div></div>
     <div class="stat"><div class="sv" id="sSteps">0</div><div class="sl">STEPS</div></div>
   </div>
   <div class="tabs">
@@ -116,7 +115,6 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
     <button class="tab" onclick="showTab('food')">🍽️ Food</button>
     <button class="tab" onclick="showTab('study')">📚 Study</button>
     <button class="tab" onclick="showTab('health')">💪 Health</button>
-    <button class="tab" onclick="showTab('finance')">💰 Finance</button>
     <button class="tab" onclick="showTab('insights')">✨ Insights</button>
     <button class="tab" onclick="showTab('grocery')">🛒 Grocery</button>
     <button class="tab" onclick="showTab('reports')">📈 Reports</button>
@@ -129,7 +127,6 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
   <div id="tab-food" class="hidden"></div>
   <div id="tab-study" class="hidden"></div>
   <div id="tab-health" class="hidden"></div>
-  <div id="tab-finance" class="hidden"></div>
   <div id="tab-insights" class="hidden"></div>
   <div id="tab-grocery" class="hidden"></div>
   <div id="tab-reports" class="hidden"></div>
@@ -251,7 +248,6 @@ const SP={
   5:{s:"MBA",t:"Finance Basics — P&L Statement",c:"#7C3AED"},
   6:{s:"MBA",t:"MBA Live Session / Module Prep",c:"#7C3AED"},
 };
-const EC={"Food":{i:"🍱",c:"#2A9D5C"},"Transport":{i:"⛽",c:"#D97706"},"Groceries":{i:"🛒",c:"#2563EB"},"Utilities":{i:"💡",c:"#7C3AED"},"Personal":{i:"🛍️",c:"#EA580C"},"Health":{i:"💊",c:"#E8402A"},"Other":{i:"📦",c:"#8A8070"}};
 
 function getSched(dow){
   const iO=[1,3,5].includes(dow),iW=[2,4].includes(dow),iWE=[0,6].includes(dow);
@@ -307,8 +303,8 @@ function getSched(dow){
   return b;
 }
 
-let D={},curTab='today',selCat='Groceries',studyOn=null,studyIv=null,studyEl=0;
-let openLogId=null,openFoodType=null,foodDev=false,showUnplan=false,showExp=false,showCC=false,selCCCat='Groceries';
+let D={},curTab='today',studyOn=null,studyIv=null,studyEl=0;
+let openLogId=null,openFoodType=null,foodDev=false,showUnplan=false;
 const dow=new Date().getDay(),sched=getSched(dow),fp=FP[dow],sp=SP[dow];
 
 function tKey(){
@@ -335,14 +331,10 @@ function gData(){const k='g_'+weekKey();if(!D[k])D[k]={checks:{},prices:{}};retu
 function load(){
   try{const r=localStorage.getItem(SK);D=r?JSON.parse(r):{};}catch{D={};}
   const k=tKey();
-  if(!D[k])D[k]={sc:{},food:[],study:[],h:{cigs:0,gum:0,steps:0,wt:98},fin:[],unp:[]};
+  if(!D[k])D[k]={sc:{},food:[],study:[],h:{cigs:0,gum:0,steps:0,wt:98},unp:[]};
   gData();
-  mData();
   getSettings();
   getFridgeData();
-  // Set June budget
-  const mk='monthbudget_'+monthKey();
-  if(!D[mk])D[mk]={daily:61};
 }
 function save(){try{localStorage.setItem(SK,JSON.stringify(D));}catch{}}
 
@@ -359,7 +351,6 @@ function getTodayFP(){
   } : fp;
 }
 function tCal(){return td().food.reduce((s,f)=>s+f.cal,0);}
-function tSpent(){return td().fin.reduce((s,e)=>s+e.amt,0);}
 function dTasks(){const cs=currentSched();return cs.filter(i=>td().sc[i.id]).length;}
 function sMins(){return td().study.reduce((s,x)=>s+x.mins,0);}
 function fAdh(){const f=td().food;if(!f.length)return 0;return Math.round(f.filter(x=>!x.dev).length/f.length*100);}
@@ -382,21 +373,19 @@ function uHdr(){
   document.getElementById('aPct').textContent=al+'%';
   document.getElementById('aPct').style.color=ac;
   document.getElementById('aCircle').style.borderColor=ac;
-  const tc=tCal(),ts=tSpent(),h=td().h;
+  const tc=tCal(),h=td().h;
   document.getElementById('sTasks').textContent=dTasks()+'/'+currentSched().length;
   document.getElementById('sTasks').style.color='#2563EB';
   document.getElementById('sCal').textContent=tc;
   document.getElementById('sCal').style.color=tc>TC?'#E8402A':'#2A9D5C';
-  document.getElementById('sSpent').textContent='₹'+ts;
-  document.getElementById('sSpent').style.color=ts>getDailyBudget()?'#E8402A':'#2A9D5C';
   document.getElementById('sSteps').textContent=(h.steps||0).toLocaleString();
   document.getElementById('sSteps').style.color=(h.steps||0)>=6000?'#2A9D5C':'#D97706';
 }
 
 function showTab(n){
   curTab=n;
-  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['today','food','study','health','finance','insights','grocery','reports','settings','fridge'][i]===n);});
-  ['today','food','study','health','finance','insights','grocery','reports','settings','fridge'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==n);});
+  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['today','food','study','health','insights','grocery','reports','settings','fridge'][i]===n);});
+  ['today','food','study','health','insights','grocery','reports','settings','fridge'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==n);});
   render(n);
 }
 function render(n){
@@ -404,7 +393,6 @@ function render(n){
   else if(n==='food')rFood();
   else if(n==='study')rStudy();
   else if(n==='health')rHealth();
-  else if(n==='finance')rFinance();
   else if(n==='insights')rInsights();
   else if(n==='grocery')rGrocery();
   else if(n==='reports')rReports();
@@ -684,152 +672,6 @@ function rHealth(){
 function uH(k,d){const h=td().h;h[k]=Math.max(0,parseFloat(((h[k]||0)+d).toFixed(2)));save();rHealth();uHdr();}
 function uW(d){const h=td().h;h.wt=parseFloat(((h.wt||98)+d).toFixed(1));save();rHealth();}
 
-// Finance helpers
-function getDailyBudget(){
-  const s=getSettings();
-  if(s&&s.dailybudget) return s.dailybudget;
-  const mk2='monthbudget_'+monthKey();
-  const mb=D[mk2];
-  if(mb&&mb.daily) return mb.daily;
-  return 107;
-}
-function monthKey(){const d=new Date();return `${d.getFullYear()}_${d.getMonth()+1}`;}
-function mData(){const k='month_'+monthKey();if(!D[k])D[k]={cc:[]};return D[k];}
-function ccTotal(){return mData().cc.reduce((s,e)=>s+e.amt,0);}
-function ccBudgetUsed(){
-  // what % of next salary is already committed
-  return Math.round((ccTotal()/92000)*100);
-}
-
-function rFinance(){
-  const el=document.getElementById('tab-finance');
-  const ts=tSpent(),db=getDailyBudget(),over=ts>db;
-  const cc=mData().cc,cct=ccTotal();
-  let h=`
-  <!-- Monthly budget setup -->
-  <div class="card" style="background:#F5F3FF;border-color:#7C3AED44;margin-bottom:10px">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <div style="font-size:9px;color:#7C3AED;letter-spacing:2px;font-weight:700">JUNE DAILY BUDGET</div>
-        <div style="font-size:28px;font-weight:800;color:#7C3AED">₹${db}<span style="font-size:13px;color:#8A8070">/day</span></div>
-        <div style="font-size:10px;color:#8A8070">After petrol + groceries deducted</div>
-      </div>
-      <button style="background:#7C3AED;border:none;border-radius:8px;color:#fff;padding:8px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none" onclick="showBudgetSetup()">Update</button>
-    </div>
-  </div>
-
-  <!-- Daily cash summary -->
-  <div class="card" style="background:linear-gradient(135deg,${over?'#FEF0ED,#FEE2DD':'#EDF7F2,#D1FAE5'});border-color:${over?'#E8402A':'#2A9D5C'}44">
-    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-      <div>
-        <div style="font-size:9px;color:${over?'#E8402A':'#2A9D5C'};letter-spacing:2px;font-weight:700">CASH SPENT TODAY</div>
-        <div style="font-size:30px;font-weight:800;color:${over?'#E8402A':'#1A1814'}">₹${ts}</div>
-        <div style="font-size:10px;color:#8A8070">Daily budget ₹${db}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:9px;color:#C5BFB0;letter-spacing:2px">REMAINING</div>
-        <div style="font-size:30px;font-weight:800;color:${over?'#E8402A':'#2A9D5C'}">₹${Math.max(0,db-ts)}</div>
-        <div style="font-size:10px;color:${over?'#E8402A':'#8A8070'}">${over?'OVER BUDGET ⚠️':'left today'}</div>
-      </div>
-    </div>
-    <div class="pt" style="background:rgba(255,255,255,0.5)"><div class="pf" style="width:${Math.min(100,(ts/db)*100)}%;background:${over?'#E8402A':'#2A9D5C'}"></div></div>
-  </div>`;
-
-  // Cash expenses today
-  if(td().fin.length){
-    h+=`<div class="slbl">CASH EXPENSES TODAY</div>`;
-    td().fin.forEach((e,ei)=>{
-      const cat=EC[e.cat]||EC.Other;
-      h+=`<div class="card" style="display:flex;align-items:center;gap:12px"><div style="font-size:24px">${cat.i}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${e.desc}</div><div style="display:flex;gap:6px;margin-top:4px;align-items:center"><span class="pill" style="background:${cat.c}18;color:${cat.c}">${e.cat}</span><span style="font-size:9px;color:#C5BFB0">${e.time}</span></div></div><div style="display:flex;align-items:center;gap:8px"><div style="font-size:15px;font-weight:800;color:#E8402A">₹${e.amt}</div><button onclick="delExp(${ei})" style="background:#FEF0ED;border:none;border-radius:6px;color:#E8402A;padding:6px 8px;font-size:11px;cursor:pointer;font-family:inherit;-webkit-appearance:none">✕</button></div></div>`;
-    });
-  }
-
-  // Credit card section
-  h+=`
-  <div class="card" style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-color:#2563EB44;margin-top:6px">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-      <div>
-        <div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700">ICICI CREDIT CARD</div>
-        <div style="font-size:28px;font-weight:800;color:#2563EB">₹${cct.toLocaleString()}</div>
-        <div style="font-size:10px;color:#8A8070">Due by 8 July · Limit ₹4,30,000</div>
-        <div style="font-size:11px;color:${ccBudgetUsed()>30?'#E8402A':'#2563EB'};font-weight:700;margin-top:4px">${ccBudgetUsed()}% of July salary committed</div>
-      </div>
-      <button style="background:#2563EB;border:none;border-radius:8px;color:#fff;padding:8px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none" onclick="showCC=true;rFinance()">+ Add</button>
-    </div>
-    <div class="pt" style="background:rgba(255,255,255,0.5)"><div class="pf" style="width:${Math.min(100,ccBudgetUsed()*3)}%;background:${ccBudgetUsed()>30?'#E8402A':'#2563EB'}"></div></div>
-  </div>`;
-
-  // CC expenses this month
-  if(cc.length){
-    h+=`<div class="slbl">CREDIT CARD THIS MONTH</div>`;
-    cc.forEach((e,ei)=>{
-      const cat=EC[e.cat]||EC.Other;
-      h+=`<div class="card" style="display:flex;align-items:center;gap:12px;border-left:3px solid #2563EB"><div style="font-size:24px">${cat.i}</div><div style="flex:1"><div style="font-size:13px;font-weight:500">${e.desc}</div><div style="display:flex;gap:6px;margin-top:4px;align-items:center"><span class="pill" style="background:#EFF6FF;color:#2563EB">CREDIT CARD</span><span style="font-size:9px;color:#C5BFB0">${e.date}</span></div></div><div style="display:flex;align-items:center;gap:8px"><div style="font-size:15px;font-weight:800;color:#2563EB">₹${e.amt}</div><button onclick="delCC(${ei})" style="background:#EFF6FF;border:none;border-radius:6px;color:#2563EB;padding:6px 8px;font-size:11px;cursor:pointer;font-family:inherit;-webkit-appearance:none">✕</button></div></div>`;
-    });
-  }
-
-  // Add CC expense form
-  if(showCC){
-    h+=`<div class="iform" style="border-color:#2563EB44">
-      <div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG CREDIT CARD EXPENSE</div>
-      <div style="background:#FFFBEB;border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:#D97706;font-weight:600">⚠️ Necessary purchases only. This reduces July salary available.</div>
-      <label class="flbl">WHAT DID YOU BUY?</label>
-      <input type="text" id="ccd" placeholder="e.g. Groceries - Blinkit" style="margin-bottom:10px">
-      <label class="flbl">AMOUNT (₹)</label>
-      <input type="number" id="cca" placeholder="e.g. 950" style="margin-bottom:12px">
-      <label class="flbl" style="margin-bottom:8px">CATEGORY</label>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
-        ${Object.entries(EC).map(([cat,{c}])=>`<button class="cbtn${selCCCat===cat?' selected':''}" style="${selCCCat===cat?`background:${c};color:#fff;border-color:${c}`:''};" onclick="selCCCat='${cat}';rFinance()">${cat}</button>`).join('')}
-      </div>
-      <div class="brow">
-        <button class="bp" style="background:#2563EB" onclick="logCC()">LOG ✓</button>
-        <button class="bs" onclick="showCC=false;rFinance()">CANCEL</button>
-      </div>
-    </div>`;
-  }
-
-  // Add cash expense form
-  if(showExp){
-    const cb=Object.entries(EC).map(([cat,{c}])=>`<button class="cbtn${selCat===cat?' selected':''}" style="${selCat===cat?`background:${c};color:#fff;border-color:${c}`:''};" onclick="selCat='${cat}';rFinance()">${cat}</button>`).join('');
-    h+=`<div class="iform" style="margin-top:8px"><div style="font-size:9px;color:#E8402A;letter-spacing:2px;font-weight:700;margin-bottom:10px">LOG CASH EXPENSE</div><label class="flbl">WHAT DID YOU SPEND ON?</label><input type="text" id="ed" placeholder="e.g. Petrol, chai" style="margin-bottom:10px"><label class="flbl">AMOUNT (₹)</label><input type="number" id="ea" placeholder="e.g. 150" style="margin-bottom:12px"><label class="flbl" style="margin-bottom:8px">CATEGORY</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">${cb}</div><div class="brow"><button class="bp" style="background:#E8402A" onclick="logExp()">LOG ✓</button><button class="bs" onclick="showExp=false;rFinance()">CANCEL</button></div></div>`;
-  } else {
-    h+=`<div style="display:flex;gap:8px;margin-top:8px">
-      <button class="abtn" style="color:#E8402A" onclick="showExp=true;showCC=false;rFinance()">+ CASH EXPENSE</button>
-      <button class="abtn" style="color:#2563EB" onclick="showCC=true;showExp=false;rFinance()">+ CREDIT CARD</button>
-    </div>`;
-  }
-  el.innerHTML=h;
-}
-
-function showBudgetSetup(){
-  const amt=prompt('Enter your daily budget for this month (₹):','107');
-  if(amt&&!isNaN(amt)){
-    const k='monthbudget_'+monthKey();
-    if(!D[k])D[k]={};
-    D[k].daily=parseInt(amt);
-    save();rFinance();
-  }
-}
-
-function logExp(){
-  const desc=document.getElementById('ed')?.value.trim();
-  const amt=parseInt(document.getElementById('ea')?.value);
-  if(!desc||!amt)return;
-  const cat=EC[selCat]||EC.Other;
-  td().fin.push({desc,amt,cat:selCat,icon:cat.i,time:now()});
-  save();showExp=false;rFinance();uHdr();
-}
-
-function logCC(){
-  const desc=document.getElementById('ccd')?.value.trim();
-  const amt=parseInt(document.getElementById('cca')?.value);
-  if(!desc||!amt)return;
-  const cat=EC[selCCCat]||EC.Other;
-  const d=new Date();
-  mData().cc.push({desc,amt,cat:selCCCat,icon:cat.i,date:`${d.getDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]}`});
-  save();showCC=false;rFinance();
-}
-
 // GROCERY
 function rGrocery(){
   const el=document.getElementById('tab-grocery');
@@ -844,14 +686,13 @@ function rGrocery(){
         ${gt>0?`<div style="font-size:14px;color:#2A9D5C;font-weight:700;margin-top:6px">Total entered: ₹${gt.toFixed(0)}</div>`:''}
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-        ${gt>0?`<button style="background:#2A9D5C;border:none;border-radius:8px;color:#fff;padding:9px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none" onclick="addGroceryToFinance()">→ Add ₹${gt.toFixed(0)} to Finance</button>`:''}
         <button style="background:#fff;border:1.5px solid #EDE9E0;border-radius:8px;color:#8A8070;padding:7px 12px;font-size:10px;cursor:pointer;font-family:inherit;-webkit-appearance:none" onclick="resetGrocery()">Reset Week</button>
       </div>
     </div>
     <div class="pt" style="background:rgba(255,255,255,0.5);margin-top:10px"><div class="pf" style="width:${Math.min(100,(done/total)*100)}%;background:#2A9D5C"></div></div>
   </div>
   <div style="background:#EFF6FF;border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:#2563EB;font-weight:600">
-    📱 Tap item to tick · Enter price after ordering · Tap "Add to Finance" when done
+    📱 Tap item to tick · Enter price after ordering
   </div>`;
 
   GROCERY.forEach((cat,ci)=>{
@@ -890,26 +731,6 @@ function setPrice(key,val){const gd=gData();gd.prices[key]=val;save();
   const gt=gTotal();
   rGrocery();
 }
-function addGroceryToFinance(){
-  const gt=gTotal();
-  if(gt<=0)return;
-  td().fin.push({desc:'Weekly Groceries — Blinkit',amt:Math.round(gt),cat:'Groceries',icon:'🛒',time:now()});
-  save();
-  alert(`₹${Math.round(gt)} added to Finance as Weekly Groceries!`);
-  uHdr();
-}
-function delExp(idx){
-  if(confirm('Delete this expense?')){
-    td().fin.splice(idx,1);
-    save();rFinance();uHdr();
-  }
-}
-function delCC(idx){
-  if(confirm('Delete this credit card entry?')){
-    mData().cc.splice(idx,1);
-    save();rFinance();
-  }
-}
 function resetGrocery(){
   if(confirm('Reset this week\'s grocery list?')){
     const k='g_'+weekKey();
@@ -920,12 +741,12 @@ function resetGrocery(){
 
 function rInsights(){
   const el=document.getElementById('tab-insights');
-  const al=align(),tc=tCal(),ts=tSpent(),h=td().h,sm=sMins(),fa=fAdh();
+  const al=align(),tc=tCal(),h=td().h,sm=sMins(),fa=fAdh();
   const ac=al>=80?'#2A9D5C':al>=60?'#D97706':'#E8402A';
   const late=sched.filter(i=>td().sc[i.id]?.status==='late').length;
   const w=td().sc['wake'];
   let htm=`<div class="card" style="background:${ac}15;border:1.5px solid ${ac}44;text-align:center;padding:24px 16px"><div style="font-size:9px;color:${ac};letter-spacing:3px;font-weight:700;margin-bottom:8px">TODAY'S ALIGNMENT</div><div style="font-size:64px;font-weight:800;color:${ac};line-height:1">${al}%</div><div style="font-size:13px;color:#8A8070;margin-top:8px">${dTasks()} of ${sched.length} tasks · ${late} ran late</div><div style="background:rgba(255,255,255,0.6);border-radius:8px;height:8px;margin-top:12px"><div style="height:8px;border-radius:8px;width:${al}%;background:${ac};transition:width 0.5s"></div></div></div><div class="slbl" style="margin-top:16px">BREAKDOWN</div>`;
-  [{l:'Calories',v:`${tc}`,n:`Target ${TC} · ${Math.max(0,TC-tc)} remaining`,c:tc<=TC?'#2A9D5C':'#E8402A'},{l:'Food Adherence',v:`${fa}%`,n:`${td().food.filter(f=>!f.dev).length} on-plan · ${td().food.filter(f=>f.dev).length} deviated`,c:fa>=80?'#2A9D5C':'#D97706'},{l:'Study',v:`${sm}m`,n:`${sp.s} · target 60min`,c:sm>=60?'#2A9D5C':sm>0?'#D97706':'#E8402A'},{l:'Money Spent',v:`₹${ts}`,n:`Budget ₹${getDailyBudget()}/day`,c:ts<=getDailyBudget()?'#2A9D5C':'#E8402A'},{l:'Steps',v:(h.steps||0).toLocaleString(),n:'Target 6,000+',c:(h.steps||0)>=6000?'#2A9D5C':'#D97706'}].forEach(({l,v,n,c})=>{htm+=`<div class="irow"><div><div style="font-size:13px;font-weight:500">${l}</div><div style="font-size:10px;color:#8A8070;margin-top:2px">${n}</div></div><div style="font-size:18px;font-weight:800;color:${c};flex-shrink:0;margin-left:12px">${v}</div></div>`;});
+  [{l:'Calories',v:`${tc}`,n:`Target ${TC} · ${Math.max(0,TC-tc)} remaining`,c:tc<=TC?'#2A9D5C':'#E8402A'},{l:'Food Adherence',v:`${fa}%`,n:`${td().food.filter(f=>!f.dev).length} on-plan · ${td().food.filter(f=>f.dev).length} deviated`,c:fa>=80?'#2A9D5C':'#D97706'},{l:'Study',v:`${sm}m`,n:`${sp.s} · target 60min`,c:sm>=60?'#2A9D5C':sm>0?'#D97706':'#E8402A'},{l:'Steps',v:(h.steps||0).toLocaleString(),n:'Target 6,000+',c:(h.steps||0)>=6000?'#2A9D5C':'#D97706'}].forEach(({l,v,n,c})=>{htm+=`<div class="irow"><div><div style="font-size:13px;font-weight:500">${l}</div><div style="font-size:10px;color:#8A8070;margin-top:2px">${n}</div></div><div style="font-size:18px;font-weight:800;color:${c};flex-shrink:0;margin-left:12px">${v}</div></div>`;});
   const verdict=al>=80&&tc<=TC?'🌟 Outstanding day. High alignment, calories controlled, smoking on target.':al>=60?`✅ Acceptable. ${late>0?`${late} task(s) late. `:''}${tc>TC?`Calories over by ${tc-TC}. `:''}Tighten tomorrow.`:'⚠️ Below threshold. Something broke. Identify it before sleeping. Reset tomorrow.';
   htm+=`<div class="card" style="margin-top:16px;background:${al>=60?'#EDF7F2':'#FEF0ED'};border-color:${al>=60?'#2A9D5C':'#E8402A'}44"><div style="font-size:9px;color:${al>=60?'#2A9D5C':'#E8402A'};letter-spacing:2px;font-weight:700;margin-bottom:8px">TODAY'S VERDICT</div><div style="font-size:13px;color:#1A1814;line-height:1.8">${verdict}</div></div><div class="card" style="margin-top:10px;background:#EFF6FF;border-color:#2563EB44"><div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">📋 NIGHTLY REPORT — COPY + SEND</div><div class="rbox">Wake:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${w?.time||'___'}<br>Walk:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${td().sc['walk']?'Y ✓':'N'}<br>Breakfast:&nbsp;${td().sc['bfast']?'Y ✓':'N'}<br>Study:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${sm>0?`Y · ${sp.s} · ${sm}min`:'N'}<br>Calories:&nbsp;&nbsp;${tc}<br>Spent:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹${ts}<br>Steps:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${(h.steps||0).toLocaleString()}<br>Alignment:&nbsp;${al}%</div></div>`;
   el.innerHTML=htm;
@@ -949,11 +770,10 @@ function rReports(){
       const skipped=sc2.filter(s=>dd.sc[s.id]?.status==='skipped').length;
       const al=Math.round((done+(skipped*0.5))/sc2.length*100);
       const cal=dd.food.reduce((s,f)=>s+f.cal,0);
-      const spent=dd.fin.reduce((s,e)=>s+e.amt,0);
       const sm=dd.study.reduce((s,x)=>s+x.mins,0);
 
       const wt=dd.h?.wt||0;
-      days.push({date:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}),dow:dow2,al,cal,spent,sm,wt,key});
+      days.push({date:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}),dow:dow2,al,cal,sm,wt,key});
     }
   }
 
@@ -961,7 +781,6 @@ function rReports(){
   const avgCal=days.length?Math.round(days.reduce((s,d)=>s+d.cal,0)/days.length):0;
 
   const totalStudy=days.reduce((s,d)=>s+d.sm,0);
-  const totalSpent=days.reduce((s,d)=>s+d.spent,0);
   const bestDay=days.length?days.reduce((a,b)=>a.al>b.al?a:b):null;
   const worstDay=days.length?days.reduce((a,b)=>a.al<b.al?a:b):null;
 
@@ -985,11 +804,6 @@ function rReports(){
       <div style="font-size:9px;color:#D97706;letter-spacing:2px;font-weight:700">AVG CAL</div>
       <div style="font-size:24px;font-weight:800;color:${avgCal<=1700?'#2A9D5C':'#E8402A'}">${avgCal}</div>
       <div style="font-size:9px;color:#8A8070">per day</div>
-    </div>
-    <div class="card" style="text-align:center;padding:12px">
-      <div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700">SPENT</div>
-      <div style="font-size:24px;font-weight:800;color:#2563EB">₹${totalSpent}</div>
-      <div style="font-size:9px;color:#8A8070">this week</div>
     </div>
   </div>
 
@@ -1065,7 +879,6 @@ function getSettings(){
     mbastarttime:'09:00',
     sapdaysoffice:[1,3,5],
     sapdayswfh:[2,4],
-    dailybudget:61,
     specialday:null, // {type, date}
   };
   return D['settings'];
@@ -1158,14 +971,6 @@ function rSettings(){
     <input type="time" value="${s.mbastarttime}" onchange="updateMBATime(this.value)" style="margin-bottom:0">
   </div>
 
-  <!-- Daily Budget -->
-  <div class="card">
-    <div style="font-size:9px;color:#2A9D5C;letter-spacing:2px;font-weight:700;margin-bottom:10px">💰 DAILY CASH BUDGET</div>
-    <div style="font-size:11px;color:#8A8070;margin-bottom:10px">Update at start of each month based on your expenses.</div>
-    <input type="number" value="${s.dailybudget}" onchange="updateBudget(this.value)" placeholder="e.g. 107">
-    <div style="font-size:10px;color:#8A8070;margin-top:6px">Current: ₹${s.dailybudget}/day</div>
-  </div>
-
   <!-- Info -->
   <div style="background:#EDF7F2;border-radius:10px;padding:12px 14px;margin-top:4px">
     <div style="font-size:10px;color:#2A9D5C;font-weight:700;margin-bottom:4px">✅ DATA IS SAFE</div>
@@ -1218,15 +1023,6 @@ function updateMBATime(val){
   saveSettings();
 }
 
-function updateBudget(val){
-  const s=getSettings();
-  s.dailybudget=parseInt(val)||107;
-  // Also update monthbudget
-  const mk2='monthbudget_'+monthKey();
-  if(!D[mk2])D[mk2]={};
-  D[mk2].daily=s.dailybudget;
-  saveSettings();
-}
 
 
 // ═══════════════════════════════════════════════════════════════
