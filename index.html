@@ -116,7 +116,6 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
     <button class="tab" onclick="showTab('study')">📚 Study</button>
     <button class="tab" onclick="showTab('health')">💪 Health</button>
     <button class="tab" onclick="showTab('insights')">✨ Insights</button>
-    <button class="tab" onclick="showTab('grocery')">🛒 Grocery</button>
     <button class="tab" onclick="showTab('reports')">📈 Reports</button>
     <button class="tab" onclick="showTab('settings')">⚙️ Settings</button>
     <button class="tab" onclick="showTab('fridge')">🧊 Fridge</button>
@@ -128,7 +127,6 @@ input[type=text],input[type=number],input[type=time]{background:#fff;border:1.5p
   <div id="tab-study" class="hidden"></div>
   <div id="tab-health" class="hidden"></div>
   <div id="tab-insights" class="hidden"></div>
-  <div id="tab-grocery" class="hidden"></div>
   <div id="tab-reports" class="hidden"></div>
   <div id="tab-settings" class="hidden"></div>
   <div id="tab-fridge" class="hidden"></div>
@@ -140,65 +138,6 @@ const SK="sumesh_permanent",TC=1700,DB=107;
 const QT=["Every small step counts. 🌱","You showed up. That's already winning. 💪","Discipline is freedom. Keep going. 🔥","One day at a time. You've got this. ☀️","Progress over perfection. Always. ✨","Your future self is watching. Make them proud. 🎯","Small habits. Big life. 🌟"];
 const DNS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const DSH=["SUN","MON","TUE","WED","THU","FRI","SAT"];
-
-const GROCERY=[
-  {cat:"🌾 Staples & Grains",color:"#D97706",bg:"#FFFBEB",items:[
-    {n:"Sattu (Bengal gram flour)",q:"500g",dishes:"Mon,Thu,Fri,Sat breakfast"},
-    {n:"Poha (flattened rice)",q:"500g",dishes:"Tue breakfast"},
-    {n:"Murmura (puffed rice)",q:"200g",dishes:"Wed breakfast"},
-    {n:"Ragi flour",q:"250g",dishes:"Fri breakfast"},
-    {n:"Basmati rice",q:"2 kg",dishes:"Mon,Wed,Thu,Fri,Sun lunch/dinner"},
-    {n:"Whole wheat atta",q:"1 kg",dishes:"Tue,Thu,Fri,Sat chapati"},
-    {n:"Bread (whole wheat)",q:"1 loaf",dishes:"Wed,Sun breakfast"},
-  ]},
-  {cat:"🫘 Pulses & Legumes",color:"#EA580C",bg:"#FFF7ED",items:[
-    {n:"Toor dal",q:"500g",dishes:"Mon Dal Tadka, Dalma"},
-    {n:"Masoor dal",q:"250g",dishes:"Alternative dal days"},
-    {n:"Moong dal",q:"250g",dishes:"Light dal option"},
-    {n:"Rajma (kidney beans)",q:"250g",dishes:"Thu lunch/dinner — soak Wed night"},
-    {n:"Chole (chickpeas)",q:"250g",dishes:"Tue lunch/dinner — soak Mon night"},
-    {n:"Black chana",q:"250g",dishes:"Alternative legume"},
-  ]},
-  {cat:"🥬 Vegetables",color:"#2A9D5C",bg:"#EDF7F2",items:[
-    {n:"Potato (aloo)",q:"500g",dishes:"Santula, Aloo Potala, daily sabzi"},
-    {n:"Cabbage",q:"1 medium",dishes:"Mon Dal + Cabbage Sabzi"},
-    {n:"Palak (spinach)",q:"1 bunch",dishes:"Saga Bhaja (Odia), Palak Paneer"},
-    {n:"Bhindi (okra)",q:"250g",dishes:"Bhindi Masala"},
-    {n:"Cauliflower",q:"1 small",dishes:"Aloo Gobi, mixed veg"},
-    {n:"Capsicum",q:"2 pcs",dishes:"Capsicum Aloo, mixed veg"},
-    {n:"Brinjal (baingan)",q:"2 pcs",dishes:"Santula, Bharta"},
-    {n:"Drumstick (sahjan)",q:"4 pcs",dishes:"Santula, Drumstick Dal",flag:"Local market"},
-    {n:"Raw banana (kachha kela)",q:"2 pcs",dishes:"Santula",flag:"Local market"},
-    {n:"Pumpkin (kakharu)",q:"250g",dishes:"Santula, Kakharu Bhaja"},
-    {n:"Tomatoes",q:"500g",dishes:"All curries, salad"},
-    {n:"Onions",q:"500g",dishes:"All dishes, salad"},
-    {n:"Cucumber",q:"3 pcs",dishes:"Daily salad"},
-    {n:"Green chillies",q:"100g",dishes:"All dishes"},
-    {n:"Ginger",q:"100g",dishes:"All curries"},
-    {n:"Garlic",q:"1 bulb",dishes:"All curries"},
-    {n:"Coriander leaves",q:"1 bunch",dishes:"Garnish"},
-    {n:"Lemon",q:"4 pcs",dishes:"Salad, dal"},
-  ]},
-  {cat:"🥛 Dairy",color:"#2563EB",bg:"#EFF6FF",items:[
-    {n:"Curd",q:"1 kg",dishes:"Mon,Wed breakfast + lunch raita"},
-    {n:"Milk",q:"1 litre",dishes:"Sat breakfast, tea"},
-    {n:"Paneer",q:"200g",dishes:"Sat Paneer Bhurji only"},
-  ]},
-  {cat:"🍌 Fruits",color:"#7C3AED",bg:"#F5F3FF",items:[
-    {n:"Bananas",q:"8 pcs",dishes:"Mon,Thu,Fri,Sat breakfast"},
-  ]},
-  {cat:"🫙 Condiments",color:"#0D9488",bg:"#F0FDFA",items:[
-    {n:"Peanut butter",q:"1 jar",dishes:"Wed,Fri breakfast"},
-    {n:"Jaggery (gur)",q:"small block",dishes:"Tue Sattu breakfast"},
-    {n:"Papad",q:"1 pack",dishes:"With Dalma, Khichdi"},
-    {n:"Mustard seeds",q:"if needed",dishes:"Besara, Santula tempering",monthly:true},
-    {n:"Cooking oil",q:"500ml if needed",dishes:"All cooking",monthly:true},
-    {n:"Turmeric, chilli, coriander powder",q:"if running low",dishes:"All dishes",monthly:true},
-  ]},
-  {cat:"🟢 Essentials",color:"#E8402A",bg:"#FEF0ED",items:[
-    {n:"Stress relief gum",q:"1 pack",dishes:"Keep in pocket at all times"},
-  ]},
-];
 
 const FP={
   // Default rotation — replaced by Fridge tab plan when used
@@ -314,6 +253,25 @@ function tKey(){
   const dy=String(d.getDate()).padStart(2,'0');
   return `${yr}-${mo}-${dy}`;
 }
+function dateKeyOffset(days){
+  const d=new Date();
+  d.setDate(d.getDate()+days);
+  const yr=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),dy=String(d.getDate()).padStart(2,'0');
+  return `${yr}-${mo}-${dy}`;
+}
+function getNoOG(){
+  if(!D['noog']) D['noog']={};
+  return D['noog'];
+}
+function isNoOGDay(dateKeyStr){ return !!getNoOG()[dateKeyStr]; }
+function toggleNoOGTomorrow(){
+  const k=dateKeyOffset(1);
+  const noog=getNoOG();
+  noog[k]=!noog[k];
+  save();
+  if(curTab==='food')rFood();
+  if(curTab==='fridge')rFridge();
+}
 function now(){const d=new Date();return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 function td(){return D[tKey()];}
 function weekKey(){
@@ -326,20 +284,51 @@ function weekKey(){
   const dy=String(mon.getDate()).padStart(2,'0');
   return `${yr}-${mo}-${dy}`;
 }
-function gData(){const k='g_'+weekKey();if(!D[k])D[k]={checks:{},prices:{}};return D[k];}
-
 function load(){
   try{const r=localStorage.getItem(SK);D=r?JSON.parse(r):{};}catch{D={};}
   const k=tKey();
   if(!D[k])D[k]={sc:{},food:[],study:[],h:{cigs:0,gum:0,steps:0,wt:98},unp:[]};
-  gData();
   getSettings();
   getFridgeData();
 }
 function save(){try{localStorage.setItem(SK,JSON.stringify(D));}catch{}}
 
 function currentSched(){const spDay=getSpecialDay();return spDay?getSpecialSched():sched;}
+// NO ONION-GARLIC — used only on days flagged the evening before.
+// Odia satvik-style dishes that genuinely don't rely on onion-garlic for their base.
+const NOOG_LIB = {
+  breakfast: [
+    {name:"Chuda Dahi (Flattened Rice + Curd) + Banana",c:1.5,g:280},
+    {name:"Sabudana Khichdi + Peanuts",c:1.7,g:220},
+    {name:"Curd + Sattu + Banana",c:2.0,g:220},
+    {name:"Upma (no onion, tempered) + Coconut Chutney",c:1.6,g:230},
+    {name:"Moong Dal Chilla + Curd",c:1.5,g:220},
+  ],
+  main: [
+    {name:"Jeera Aloo + Curd Rice",c:1.5,g:380},
+    {name:"Moong Dal Khichdi + Ghee + Papad",c:1.6,g:380},
+    {name:"Aloo Jeera (no onion-garlic) + Chapati + Dal",c:1.4,g:370},
+    {name:"Bhindi Fry (no onion-garlic) + Dal + Rice",c:1.5,g:380},
+    {name:"Curd Rice + Papad + Pickle",c:1.3,g:360},
+    {name:"Sabudana Khichdi (heavier) + Curd",c:1.6,g:360},
+    {name:"Santula + Rice (Odia — traditionally no onion-garlic)",c:1.4,g:400},
+    {name:"Dalma + Rice (Odia — traditionally no onion-garlic)",c:1.5,g:400},
+  ],
+};
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h;}
+function noOGMealsFor(dateKeyStr){
+  const h=hashStr(dateKeyStr);
+  const b=NOOG_LIB.breakfast[h%NOOG_LIB.breakfast.length];
+  const m=NOOG_LIB.main[Math.floor(h/7)%NOOG_LIB.main.length];
+  return {
+    b:{n:b.name,c:b.c,g:b.g},
+    l:{n:m.name,c:m.c,g:m.g},
+    d:{n:m.name+' — half carbs',c:m.c,g:Math.round(m.g*0.65)},
+  };
+}
 function getTodayFP(){
+  const todayKey=tKey();
+  if(isNoOGDay(todayKey)) return noOGMealsFor(todayKey);
   const weekPlan=D['weekplan_'+weekKey()];
   const today=new Date().getDay();
   const dayMap={1:0,2:1,3:2,4:3,5:4,6:5,0:6};
@@ -360,9 +349,6 @@ function align(){
   const skipped=cs.filter(i=>td().sc[i.id]?.status==='skipped').length;
   return Math.round((done+(skipped*0.5))/cs.length*100);
 }
-function gTotal(){const gd=gData();return Object.values(gd.prices).reduce((s,v)=>s+(parseFloat(v)||0),0);}
-function gChecked(){return Object.values(gData().checks).filter(Boolean).length;}
-function gAll(){return GROCERY.reduce((s,c)=>s+c.items.length,0);}
 
 function uHdr(){
   const d=new Date();
@@ -384,8 +370,8 @@ function uHdr(){
 
 function showTab(n){
   curTab=n;
-  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['today','food','study','health','insights','grocery','reports','settings','fridge'][i]===n);});
-  ['today','food','study','health','insights','grocery','reports','settings','fridge'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==n);});
+  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['today','food','study','health','insights','reports','settings','fridge'][i]===n);});
+  ['today','food','study','health','insights','reports','settings','fridge'].forEach(t=>{document.getElementById('tab-'+t).classList.toggle('hidden',t!==n);});
   render(n);
 }
 function render(n){
@@ -394,7 +380,6 @@ function render(n){
   else if(n==='study')rStudy();
   else if(n==='health')rHealth();
   else if(n==='insights')rInsights();
-  else if(n==='grocery')rGrocery();
   else if(n==='reports')rReports();
   else if(n==='settings')rSettings();
   else if(n==='fridge')rFridge();
@@ -606,24 +591,29 @@ function rFood(){
     }
   });
   // Tomorrow's meal preview
+  const tmrwKey=dateKeyOffset(1);
+  const tmrwNoOG=isNoOGDay(tmrwKey);
   const tmrw2=new Date();tmrw2.setDate(tmrw2.getDate()+1);
   const tmrwDow2=tmrw2.getDay();
   const tmrwWeekPlan=D['weekplan_'+weekKey()];
   const tmrwDayMap={1:0,2:1,3:2,4:3,5:4,6:5,0:6};
   const tmrwMeal=tmrwWeekPlan?tmrwWeekPlan[tmrwDayMap[tmrwDow2]||0]:null;
-  const tmrwPlan = tmrwMeal ? {
+  const tmrwPlan = tmrwNoOG ? noOGMealsFor(tmrwKey) : (tmrwMeal ? {
     b:{n:tmrwMeal.breakfast.name,g:tmrwMeal.breakfast.g,c:tmrwMeal.breakfast.c},
     l:{n:tmrwMeal.lunch.name,g:tmrwMeal.lunch.portion||350,c:tmrwMeal.lunch.c||1.5},
     d:{n:tmrwMeal.lunch.name+' — half carbs',g:tmrwMeal.dinner.portion||230,c:tmrwMeal.dinner.c||1.5},
-  } : FP[tmrwDow2];
+  } : FP[tmrwDow2]);
   const tmrwName=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][tmrwDow2];
   h+=`<div class="card" style="background:#F5F3FF;border-color:#7C3AED44;margin-top:4px">
-    <div style="font-size:9px;color:#7C3AED;letter-spacing:2px;font-weight:700;margin-bottom:10px">👀 TOMORROW — ${tmrwName.toUpperCase()}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:9px;color:#7C3AED;letter-spacing:2px;font-weight:700">👀 TOMORROW — ${tmrwName.toUpperCase()}${tmrwNoOG?' · 🚫 NO ONION-GARLIC':''}</div>
+    </div>
     <div style="display:flex;flex-direction:column;gap:8px">
       <div><span class="pill" style="background:#FFFBEB;color:#D97706;margin-right:6px">BREAKFAST</span><span style="font-size:12px">${tmrwPlan.b.n}</span><div style="font-size:10px;color:#8A8070;margin-top:2px">${tmrwPlan.b.g}g · ~${Math.round(tmrwPlan.b.c*tmrwPlan.b.g)} cal</div></div>
       <div><span class="pill" style="background:#EDF7F2;color:#2A9D5C;margin-right:6px">LUNCH</span><span style="font-size:12px">${tmrwPlan.l.n}</span><div style="font-size:10px;color:#8A8070;margin-top:2px">${tmrwPlan.l.g}g · ~${Math.round(tmrwPlan.l.c*tmrwPlan.l.g)} cal</div></div>
       <div><span class="pill" style="background:#EFF6FF;color:#2563EB;margin-right:6px">DINNER</span><span style="font-size:12px">${tmrwPlan.d.n}</span><div style="font-size:10px;color:#8A8070;margin-top:2px">${tmrwPlan.d.g}g · ~${Math.round(tmrwPlan.d.c*tmrwPlan.d.g)} cal</div></div>
     </div>
+    <button onclick="toggleNoOGTomorrow()" style="width:100%;margin-top:12px;padding:10px;border-radius:8px;border:1.5px solid ${tmrwNoOG?'#EA580C':'#EDE9E0'};background:${tmrwNoOG?'#FFF7ED':'#fff'};color:${tmrwNoOG?'#EA580C':'#8A8070'};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none">${tmrwNoOG?'🚫 No Onion-Garlic — ON (tap to turn off)':'🧅 No onion/garlic tomorrow? Tap to switch meals'}</button>
   </div>`;
 
   h+=`<div style="margin-top:8px"><div class="slbl">SNACKS / EXTRAS</div>`;
@@ -672,73 +662,6 @@ function rHealth(){
 function uH(k,d){const h=td().h;h[k]=Math.max(0,parseFloat(((h[k]||0)+d).toFixed(2)));save();rHealth();uHdr();}
 function uW(d){const h=td().h;h.wt=parseFloat(((h.wt||98)+d).toFixed(1));save();rHealth();}
 
-// GROCERY
-function rGrocery(){
-  const el=document.getElementById('tab-grocery');
-  const gd=gData();
-  const total=gAll(),done=gChecked(),gt=gTotal();
-  let h=`<div class="card" style="background:linear-gradient(135deg,#EDF7F2,#D1FAE5);border-color:#2A9D5C44">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start">
-      <div>
-        <div style="font-size:9px;color:#2A9D5C;letter-spacing:2px;font-weight:700">WEEKLY GROCERY</div>
-        <div style="font-size:28px;font-weight:800">${done}/${total} items</div>
-        <div style="font-size:10px;color:#8A8070">ticked for Blinkit</div>
-        ${gt>0?`<div style="font-size:14px;color:#2A9D5C;font-weight:700;margin-top:6px">Total entered: ₹${gt.toFixed(0)}</div>`:''}
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-        <button style="background:#fff;border:1.5px solid #EDE9E0;border-radius:8px;color:#8A8070;padding:7px 12px;font-size:10px;cursor:pointer;font-family:inherit;-webkit-appearance:none" onclick="resetGrocery()">Reset Week</button>
-      </div>
-    </div>
-    <div class="pt" style="background:rgba(255,255,255,0.5);margin-top:10px"><div class="pf" style="width:${Math.min(100,(done/total)*100)}%;background:#2A9D5C"></div></div>
-  </div>
-  <div style="background:#EFF6FF;border-radius:10px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:#2563EB;font-weight:600">
-    📱 Tap item to tick · Enter price after ordering
-  </div>`;
-
-  GROCERY.forEach((cat,ci)=>{
-    h+=`<div class="gcat"><div class="gcat-hdr" style="color:${cat.color};background:${cat.bg}">${cat.cat}</div>`;
-    cat.items.forEach((item,ii)=>{
-      const key=`${ci}_${ii}`;
-      const checked=!!gd.checks[key];
-      const price=gd.prices[key]||'';
-      const isMonthly=!!item.monthly;
-      h+=`<div class="gitem${checked?' checked':''}${isMonthly?' monthly':''}">
-        <div class="grow" onclick="toggleGrocery('${key}')">
-          <div class="gcheck">${checked?'✓':''}</div>
-          <div style="flex:1">
-            <div class="gname">${item.n}</div>
-            <div class="gdish">${item.dishes}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
-            <div class="gqty">${item.q}</div>
-            ${item.flag?`<span class="gflag" style="background:#FEF0ED;color:#E8402A">${item.flag}</span>`:''}
-            ${isMonthly?`<span class="gflag" style="background:#F5F3FF;color:#7C3AED">Monthly</span>`:''}
-          </div>
-        </div>
-        <div class="gprice-row">
-          <div class="gprice-lbl">Price paid (₹)</div>
-          <input class="gprice-input" type="number" placeholder="0" value="${price}" onchange="setPrice('${key}',this.value)" onclick="event.stopPropagation()">
-        </div>
-      </div>`;
-    });
-    h+='</div>';
-  });
-  el.innerHTML=h;
-}
-function toggleGrocery(key){const gd=gData();gd.checks[key]=!gd.checks[key];save();rGrocery();}
-function setPrice(key,val){const gd=gData();gd.prices[key]=val;save();
-  // update total display without full re-render
-  const gt=gTotal();
-  rGrocery();
-}
-function resetGrocery(){
-  if(confirm('Reset this week\'s grocery list?')){
-    const k='g_'+weekKey();
-    D[k]={checks:{},prices:{}};
-    save();rGrocery();
-  }
-}
-
 function rInsights(){
   const el=document.getElementById('tab-insights');
   const al=align(),tc=tCal(),h=td().h,sm=sMins(),fa=fAdh();
@@ -748,7 +671,7 @@ function rInsights(){
   let htm=`<div class="card" style="background:${ac}15;border:1.5px solid ${ac}44;text-align:center;padding:24px 16px"><div style="font-size:9px;color:${ac};letter-spacing:3px;font-weight:700;margin-bottom:8px">TODAY'S ALIGNMENT</div><div style="font-size:64px;font-weight:800;color:${ac};line-height:1">${al}%</div><div style="font-size:13px;color:#8A8070;margin-top:8px">${dTasks()} of ${sched.length} tasks · ${late} ran late</div><div style="background:rgba(255,255,255,0.6);border-radius:8px;height:8px;margin-top:12px"><div style="height:8px;border-radius:8px;width:${al}%;background:${ac};transition:width 0.5s"></div></div></div><div class="slbl" style="margin-top:16px">BREAKDOWN</div>`;
   [{l:'Calories',v:`${tc}`,n:`Target ${TC} · ${Math.max(0,TC-tc)} remaining`,c:tc<=TC?'#2A9D5C':'#E8402A'},{l:'Food Adherence',v:`${fa}%`,n:`${td().food.filter(f=>!f.dev).length} on-plan · ${td().food.filter(f=>f.dev).length} deviated`,c:fa>=80?'#2A9D5C':'#D97706'},{l:'Study',v:`${sm}m`,n:`${sp.s} · target 60min`,c:sm>=60?'#2A9D5C':sm>0?'#D97706':'#E8402A'},{l:'Steps',v:(h.steps||0).toLocaleString(),n:'Target 6,000+',c:(h.steps||0)>=6000?'#2A9D5C':'#D97706'}].forEach(({l,v,n,c})=>{htm+=`<div class="irow"><div><div style="font-size:13px;font-weight:500">${l}</div><div style="font-size:10px;color:#8A8070;margin-top:2px">${n}</div></div><div style="font-size:18px;font-weight:800;color:${c};flex-shrink:0;margin-left:12px">${v}</div></div>`;});
   const verdict=al>=80&&tc<=TC?'🌟 Outstanding day. High alignment, calories controlled, smoking on target.':al>=60?`✅ Acceptable. ${late>0?`${late} task(s) late. `:''}${tc>TC?`Calories over by ${tc-TC}. `:''}Tighten tomorrow.`:'⚠️ Below threshold. Something broke. Identify it before sleeping. Reset tomorrow.';
-  htm+=`<div class="card" style="margin-top:16px;background:${al>=60?'#EDF7F2':'#FEF0ED'};border-color:${al>=60?'#2A9D5C':'#E8402A'}44"><div style="font-size:9px;color:${al>=60?'#2A9D5C':'#E8402A'};letter-spacing:2px;font-weight:700;margin-bottom:8px">TODAY'S VERDICT</div><div style="font-size:13px;color:#1A1814;line-height:1.8">${verdict}</div></div><div class="card" style="margin-top:10px;background:#EFF6FF;border-color:#2563EB44"><div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">📋 NIGHTLY REPORT — COPY + SEND</div><div class="rbox">Wake:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${w?.time||'___'}<br>Walk:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${td().sc['walk']?'Y ✓':'N'}<br>Breakfast:&nbsp;${td().sc['bfast']?'Y ✓':'N'}<br>Study:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${sm>0?`Y · ${sp.s} · ${sm}min`:'N'}<br>Calories:&nbsp;&nbsp;${tc}<br>Spent:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;₹${ts}<br>Steps:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${(h.steps||0).toLocaleString()}<br>Alignment:&nbsp;${al}%</div></div>`;
+  htm+=`<div class="card" style="margin-top:16px;background:${al>=60?'#EDF7F2':'#FEF0ED'};border-color:${al>=60?'#2A9D5C':'#E8402A'}44"><div style="font-size:9px;color:${al>=60?'#2A9D5C':'#E8402A'};letter-spacing:2px;font-weight:700;margin-bottom:8px">TODAY'S VERDICT</div><div style="font-size:13px;color:#1A1814;line-height:1.8">${verdict}</div></div><div class="card" style="margin-top:10px;background:#EFF6FF;border-color:#2563EB44"><div style="font-size:9px;color:#2563EB;letter-spacing:2px;font-weight:700;margin-bottom:10px">📋 NIGHTLY REPORT — COPY + SEND</div><div class="rbox">Wake:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${w?.time||'___'}<br>Walk:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${td().sc['walk']?'Y ✓':'N'}<br>Breakfast:&nbsp;${td().sc['bfast']?'Y ✓':'N'}<br>Study:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${sm>0?`Y · ${sp.s} · ${sm}min`:'N'}<br>Calories:&nbsp;&nbsp;${tc}<br>Steps:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${(h.steps||0).toLocaleString()}<br>Alignment:&nbsp;${al}%</div></div>`;
   el.innerHTML=htm;
 }
 
@@ -1038,7 +961,7 @@ const MEAL_LIB = {
     {name:"Lehsun Dal + Chapati",veg:[],protein:"dal",carb:"chapati",c:1.5,g:380,note:"High garlic — clears lungs"},
     {name:"Methi Dal + Rice",veg:["methi"],protein:"dal",carb:"rice",c:1.4,g:400,note:"Iron rich"},
     {name:"Drumstick Dal + Rice",veg:["drumstick"],protein:"dal",carb:"rice",c:1.4,g:400,note:"Lung detox"},
-    {name:"Dalma + Rice + Papad",veg:["potato","raw_banana","brinjal","raw_papaya"],protein:"dal",carb:"rice",c:1.5,g:400,odia:true,minVeg:1,sat:false},
+    {name:"Dalma + Rice + Papad",veg:["potato","raw_banana","brinjal","raw_papaya"],protein:"dal",carb:"rice",c:1.5,g:400,odia:true,minVeg:1},
   ],
   legume:[
     {name:"Chole + 2 Chapati + Salad",veg:[],protein:"chole",carb:"chapati",c:1.8,g:350,soak:true,soakItem:"Chole (chickpeas)"},
@@ -1056,7 +979,7 @@ const MEAL_LIB = {
     {name:"Cabbage Sabzi + Dal + Rice",veg:["cabbage"],protein:"dal",carb:"rice",c:1.4,g:420},
     {name:"Aloo Capsicum + Chapati + Dal",veg:["capsicum","potato"],protein:"dal",carb:"chapati",c:1.5,g:390},
     {name:"Brinjal Bharta + Chapati + Dal",veg:["brinjal"],protein:"dal",carb:"chapati",c:1.4,g:390},
-    {name:"Cauliflower Peas + Rice + Dal",veg:["cauliflower"],protein:"dal",carb:"rice",c:1.4,g:400},
+    {name:"Cauliflower Peas + Rice + Dal",veg:["cauliflower","peas"],protein:"dal",carb:"rice",c:1.4,g:400},
     {name:"Beans Sabzi + Rice + Dal",veg:["beans"],protein:"dal",carb:"rice",c:1.4,g:400},
     {name:"Raw Papaya Sabzi + Chapati + Dal",veg:["raw_papaya"],protein:"dal",carb:"chapati",c:1.4,g:390,odia:true},
     {name:"Aloo Parwal + Chapati + Dal",veg:["parwal","potato"],protein:"dal",carb:"chapati",c:1.5,g:390,odia:true},
@@ -1065,6 +988,9 @@ const MEAL_LIB = {
     {name:"Tendli Sabzi + Chapati + Dal",veg:["tendli"],protein:"dal",carb:"chapati",c:1.4,g:380},
     {name:"Carrot Peas Sabzi + Chapati + Dal",veg:["carrot","peas"],protein:"dal",carb:"chapati",c:1.5,g:390},
     {name:"Mooli Sabzi + Chapati + Dal",veg:["radish"],protein:"dal",carb:"chapati",c:1.3,g:380,note:"Clears respiratory tract"},
+    {name:"Mushroom Masala + Chapati + Dal",veg:["mushroom"],protein:"dal",carb:"chapati",c:1.4,g:380},
+    {name:"Mushroom Matar + Rice + Dal",veg:["mushroom","peas"],protein:"dal",carb:"rice",c:1.4,g:390},
+    {name:"Mushroom Capsicum Dry + Chapati + Dal",veg:["mushroom","capsicum"],protein:"dal",carb:"chapati",c:1.4,g:380},
   ],
   odia:[
     {name:"Santula + Rice + Dal",veg:["potato","raw_banana","brinjal","raw_papaya","cauliflower","parwal"],protein:"dal",carb:"rice",c:1.4,g:420,odia:true,minVeg:2},
@@ -1072,10 +998,31 @@ const MEAL_LIB = {
     {name:"Aloo Potala Rasa + Chapati + Dal",veg:["potato","raw_banana","parwal"],protein:"dal",carb:"chapati",c:1.5,g:400,odia:true,minVeg:1},
     {name:"Kela Bhaja + Dal + Rice",veg:["raw_banana"],protein:"dal",carb:"rice",c:1.4,g:400,odia:true},
     {name:"Saga Bhaja + Dal + Rice",veg:["spinach"],protein:"dal",carb:"rice",c:1.3,g:420,odia:true},
+    {name:"Ghanta Tarkari + Rice + Dal",veg:["potato","cauliflower","brinjal","beans","carrot","peas"],protein:"dal",carb:"rice",c:1.4,g:400,odia:true,minVeg:2,note:"Panch phoran tempered — ~30 min"},
+    {name:"Dahi Baigana Bhaja + Dal + Rice",veg:["brinjal"],protein:"dal",carb:"rice",c:1.4,g:380,odia:true,note:"Fried brinjal in curd — ~20 min"},
+    {name:"Tomato Khatta + Rice + Dal",veg:[],protein:"dal",carb:"rice",c:1.3,g:380,odia:true,note:"Sweet-sour, easiest — ~15 min"},
+    {name:"Alu Bharta + Dal + Rice",veg:["potato"],protein:"dal",carb:"rice",c:1.4,g:380,odia:true,note:"Mashed potato — ~15 min"},
+    {name:"Bandha Kobi Dalma + Rice",veg:["cabbage"],protein:"dal",carb:"rice",c:1.4,g:400,odia:true,note:"Cabbage-style Dalma — ~30 min"},
   ],
   paneer:[
     {name:"Paneer Bhurji + 2 Chapati + Salad",veg:[],protein:"paneer",carb:"chapati",c:2.0,g:380},
     {name:"Palak Paneer + 2 Chapati + Salad",veg:["spinach"],protein:"paneer",carb:"chapati",c:1.9,g:380},
+    {name:"Chhena Tarkari + Rice",veg:[],protein:"paneer",carb:"rice",c:1.9,g:380,odia:true,note:"Odia-style paneer curry — ~25 min"},
+  ],
+  easy:[
+    {name:"Vegetable Khichdi + Curd",veg:["carrot","peas","beans"],protein:"dal",carb:"rice",c:1.5,g:420,minVeg:1,note:"One-pot — ~30 min"},
+    {name:"Curd Rice + Pickle",veg:[],protein:"none",carb:"rice",c:1.3,g:360,note:"Barely cooking — ~10 min"},
+    {name:"Vegetable Pulao + Raita",veg:["carrot","peas","beans","capsicum"],protein:"none",carb:"rice",c:1.5,g:420,minVeg:2,note:"~30 min"},
+    {name:"Jeera Rice + Dal Fry + Sabzi",veg:["potato"],protein:"dal",carb:"rice",c:1.5,g:400,note:"~35 min"},
+    {name:"Aloo Paratha + Curd",veg:["potato"],protein:"none",carb:"chapati",c:1.8,g:350,note:"~25 min"},
+    {name:"Gobi Paratha + Curd",veg:["cauliflower"],protein:"none",carb:"chapati",c:1.8,g:350,note:"~25 min"},
+    {name:"Vegetable Fried Rice",veg:["carrot","peas","capsicum","cabbage"],protein:"none",carb:"rice",c:1.5,g:380,minVeg:2,note:"~20 min"},
+    {name:"Sambar Rice + Papad",veg:["carrot","beans","drumstick"],protein:"dal",carb:"rice",c:1.5,g:400,minVeg:1,note:"South Indian, one-pot — ~30 min"},
+  ],
+  noodles:[
+    {name:"Vegetable Hakka Noodles",veg:["cabbage","carrot","capsicum","spring_onion"],protein:"none",carb:"noodles",c:1.6,g:350,minVeg:2,note:"~20 min"},
+    {name:"Masala Spaghetti",veg:["capsicum","carrot"],protein:"none",carb:"spaghetti",c:1.6,g:350,note:"Indian-style tomato-garlic — ~20 min"},
+    {name:"Schezwan Noodles",veg:["cabbage","carrot","capsicum","spring_onion"],protein:"none",carb:"noodles",c:1.7,g:350,minVeg:2,note:"Spicier — ~20 min"},
   ],
   // Saturday is LOCKED — always Dalma + Rice + Curd + Saga Bhaja
   saturday:{name:"Dalma + Rice + Curd + Saga Bhaja",veg:["potato","spinach"],protein:"dal",carb:"rice",c:1.5,g:420,odia:true,locked:true},
@@ -1104,12 +1051,12 @@ const BFAST_LIB = [
   {name:"Ragi Sattu + Milk + Banana + Peanuts",needs:["ragi","milk","banana"],c:2.8,g:150},
   {name:"Banana + Milk + Sattu + Peanuts",needs:["banana","milk","sattu"],c:2.0,g:220},
   {name:"Vegetable Sandwich + Peanut Butter",needs:["bread","peanut_butter"],c:2.8,g:150},
-  {name:"Chuda + Curd + Banana",needs:["poha","curd","banana"],c:1.6,g:250},
+  {name:"Roasted Chana + Jaggery + Banana",needs:["chana","jaggery","banana"],c:2.2,g:180},
 ];
 
 const PANTRY = ["dal","rice","atta","sattu","bread","peanut_butter","onion","tomato","spices","oil","banana","curd","milk"];
 
-const PERISHABLE_ORDER = ["spinach","cucumber","bhindi","capsicum","cabbage","cauliflower","brinjal","raw_banana","raw_papaya","pumpkin","potato"];
+const PERISHABLE_ORDER = ["mushroom","spinach","cucumber","bhindi","capsicum","cabbage","cauliflower","brinjal","raw_banana","raw_papaya","potato"];
 
 const GROCERY_DB = {
   spinach:{name:"Palak (Spinach)",qty:"1 bunch",cat:"🥬 Vegetables",flag:""},
@@ -1154,6 +1101,7 @@ const GROCERY_DB = {
   radish:{name:"Radish (Mooli)",qty:"2 pcs",cat:"🥬 Vegetables",flag:""},
   carrot:{name:"Carrot",qty:"4 pcs",cat:"🥬 Vegetables",flag:""},
   peas:{name:"Green Peas (Matar)",qty:"200g frozen",cat:"🥬 Vegetables",flag:""},
+  mushroom:{name:"Mushroom",qty:"200g",cat:"🥬 Vegetables",flag:"Buy fresh, use within 2-3 days"},
   drumstick:{name:"Drumstick (Sahjan)",qty:"4 pcs",cat:"🥬 Vegetables",flag:"Local market"},
   // New pulses
   buta_dali:{name:"Buta Dali (Whole Black Chana)",qty:"250g",cat:"🫘 Pulses",flag:"Soak night before"},
@@ -1172,6 +1120,17 @@ const GROCERY_DB = {
   prawn:{name:"Prawns",qty:"250g",cat:"🍗 Non-Veg",flag:"Buy fresh, day of"},
   mutton:{name:"Mutton",qty:"300g",cat:"🍗 Non-Veg",flag:"Buy fresh, day of — occasional"},
   fish:{name:"Fish",qty:"350g",cat:"🍗 Non-Veg",flag:"Buy fresh, day of — occasional"},
+  // Spring onion — perishable, toggle like other vegetables
+  spring_onion:{name:"Spring Onion",qty:"1 bunch",cat:"🥬 Vegetables",flag:""},
+  // Pantry staples for new dishes — always-stocked items, shown when running low
+  ghee:{name:"Ghee",qty:"1 jar",cat:"🫙 Extras",flag:""},
+  pickle:{name:"Pickle",qty:"1 jar",cat:"🫙 Extras",flag:""},
+  panch_phoran:{name:"Panch Phoran (5-spice tempering)",qty:"1 small pack",cat:"🫙 Extras",flag:"Lasts months"},
+  sambar_powder:{name:"Sambar Powder",qty:"1 pack",cat:"🫙 Extras",flag:""},
+  hakka_noodles:{name:"Hakka Noodles",qty:"1 pack",cat:"🍜 Noodles & Pasta",flag:""},
+  spaghetti:{name:"Spaghetti",qty:"1 pack",cat:"🍜 Noodles & Pasta",flag:""},
+  soy_sauce:{name:"Soy Sauce",qty:"1 bottle",cat:"🍜 Noodles & Pasta",flag:""},
+  schezwan_paste:{name:"Schezwan Paste",qty:"1 jar",cat:"🍜 Noodles & Pasta",flag:""},
 };
 
 const VEG_OPTIONS = [
@@ -1193,6 +1152,8 @@ const VEG_OPTIONS = [
   {id:"peas",label:"🫛 Green Peas"},
   {id:"drumstick",label:"🌿 Drumstick (Sahjan)"},
   {id:"beans",label:"🫘 Beans"},
+  {id:"mushroom",label:"🍄 Mushroom"},
+  {id:"spring_onion",label:"🧅 Spring Onion"},
 ];
 
 const PROTEIN_OPTIONS = [
@@ -1235,7 +1196,7 @@ function generateMealPlan(availableVeg, availableProtein, isEmpty, nonvegDays){
 
   // Helper: find meal that uses given veg
   function findMealForVeg(veg, dayIdx){
-    const allMeals=[...MEAL_LIB.veg,...MEAL_LIB.odia,...MEAL_LIB.dal,...MEAL_LIB.paneer];
+    const allMeals=[...MEAL_LIB.veg,...MEAL_LIB.odia,...MEAL_LIB.dal,...MEAL_LIB.paneer,...MEAL_LIB.easy,...MEAL_LIB.noodles];
     const shuffled=[...allMeals].sort(()=>Math.random()-0.5);
 
     for(const meal of shuffled){
@@ -1284,7 +1245,7 @@ function generateMealPlan(availableVeg, availableProtein, isEmpty, nonvegDays){
     }
 
     // Fallback: any unused meal
-    const allTypes=[...MEAL_LIB.dal,...MEAL_LIB.legume,...MEAL_LIB.veg];
+    const allTypes=[...MEAL_LIB.dal,...MEAL_LIB.legume,...MEAL_LIB.veg,...MEAL_LIB.easy];
     const unused=allTypes.filter(m=>!usedMealNames.has(m.name));
     if(unused.length>0){
       const meal=unused[Math.floor(Math.random()*unused.length)];
@@ -1398,6 +1359,7 @@ function rFridge(){
   const el=document.getElementById('tab-fridge');
   const fd=getFridgeData();
   const existingPlan=getMealPlan();
+  const isEdit=!!(existingPlan&&fd.showSetup);
 
   if(existingPlan&&!fd.showSetup){
     // Show current week's plan
@@ -1405,16 +1367,16 @@ function rFridge(){
     return;
   }
 
-  // Show fridge setup
+  // Show fridge setup / edit
   let h=`
-  <div class="slbl">WHAT'S IN YOUR FRIDGE?</div>
+  <div class="slbl">${isEdit?'✏️ EDIT YOUR FRIDGE':"WHAT'S IN YOUR FRIDGE?"}</div>
   <div style="background:#EFF6FF;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:#2563EB;font-weight:600">
-    📱 Select what vegetables you have → App generates your week's meal plan + grocery list automatically
+    📱 ${isEdit?'Update what you have → dishes and the shopping list re-recommend based on your changes':'Select what vegetables you have → App generates your week\u2019s meal plan + shopping list automatically'}
   </div>
 
   <!-- Fridge Empty Button -->
   <button onclick="generateEmpty()" style="width:100%;background:#FEF0ED;border:1.5px dashed #E8402A;border-radius:12px;padding:14px;font-size:13px;font-weight:700;color:#E8402A;cursor:pointer;font-family:inherit;-webkit-appearance:none;margin-bottom:12px">
-    🗑️ Fridge Empty — Generate Standard Plan + Full Grocery List
+    🗑️ Fridge Empty — Generate Standard Plan + Full Shopping List
   </button>
 
   <div class="slbl">VEGETABLES I HAVE</div>
@@ -1451,8 +1413,9 @@ function rFridge(){
   h+=`</div>
 
   <button onclick="generateWithFridge()" style="width:100%;background:#2A9D5C;border:none;border-radius:12px;padding:14px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;-webkit-appearance:none">
-    ✨ Generate My Week's Plan
-  </button>`;
+    ✨ ${isEdit?'Save Changes & Re-recommend Dishes':"Generate My Week's Plan"}
+  </button>
+  ${isEdit?`<button onclick="getFridgeData().showSetup=false;rFridge()" style="width:100%;margin-top:8px;background:#fff;border:1.5px solid #EDE9E0;border-radius:12px;padding:12px;font-size:12px;font-weight:700;color:#8A8070;cursor:pointer;font-family:inherit;-webkit-appearance:none">Cancel</button>`:''}`;
 
   el.innerHTML=h;
 }
@@ -1467,23 +1430,33 @@ function renderFridgePlan(el, plan, availableVeg){
   let h=`
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
     <div class="slbl" style="margin-bottom:0">THIS WEEK'S MEAL PLAN</div>
-    <button onclick="getFridgeData().showSetup=true;rFridge()" style="background:#F5F3FF;border:1px solid #7C3AED44;border-radius:8px;color:#7C3AED;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none">🔄 Regenerate</button>
+    <button onclick="getFridgeData().showSetup=true;rFridge()" style="background:#F5F3FF;border:1px solid #7C3AED44;border-radius:8px;color:#7C3AED;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-appearance:none">✏️ Edit Fridge</button>
   </div>`;
 
   plan.forEach((day,i)=>{
     const isToday=i===todayIdx;
+    // Map this plan day (0=Mon..6=Sun) to its real calendar date this week
+    const mon=new Date();const dow0=mon.getDay();const diff=mon.getDate()-dow0+(dow0===0?-6:1);mon.setDate(diff);
+    const cellDate=new Date(mon);cellDate.setDate(mon.getDate()+i);
+    const cellKey=`${cellDate.getFullYear()}-${String(cellDate.getMonth()+1).padStart(2,'0')}-${String(cellDate.getDate()).padStart(2,'0')}`;
+    const noOG=isNoOGDay(cellKey);
+    const shown = noOG ? noOGMealsFor(cellKey) : {
+      b:{n:day.breakfast.name,c:day.breakfast.c,g:day.breakfast.g},
+      l:{n:day.lunch.name,c:day.lunch.c,g:day.lunch.portion},
+      d:{n:day.lunch.name+' — half carbs',c:day.dinner.c,g:day.dinner.portion},
+    };
     h+=`<div class="card" style="background:${isToday?'#EDF7F2':'#fff'};border-color:${isToday?'#2A9D5C44':'#EDE9E0'};margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-size:13px;font-weight:700;color:${isToday?'#2A9D5C':'#1A1814'}">${days[i]}</div>
-        <div style="display:flex;gap:6px">${day.nonveg?'<span class="pill" style="background:#FFF7ED;color:#EA580C">🍗 NON-VEG</span>':''}${isToday?'<span class="pill" style="background:#EDF7F2;color:#2A9D5C">TODAY</span>':''}</div>
+        <div style="display:flex;gap:6px">${noOG?'<span class="pill" style="background:#FFF7ED;color:#EA580C">🚫 NO ONION-GARLIC</span>':''}${day.nonveg&&!noOG?'<span class="pill" style="background:#FFF7ED;color:#EA580C">🍗 NON-VEG</span>':''}${isToday?'<span class="pill" style="background:#EDF7F2;color:#2A9D5C">TODAY</span>':''}</div>
       </div>
       <div style="font-size:10px;color:#D97706;font-weight:700;margin-bottom:2px">🌅 BREAKFAST</div>
-      <div style="font-size:12px;color:#1A1814;margin-bottom:6px">${day.breakfast.name} <span style="color:#8A8070">(${Math.round(day.breakfast.c*day.breakfast.g)} cal)</span></div>
+      <div style="font-size:12px;color:#1A1814;margin-bottom:6px">${shown.b.n} <span style="color:#8A8070">(${Math.round(shown.b.c*shown.b.g)} cal)</span></div>
       <div style="font-size:10px;color:#2A9D5C;font-weight:700;margin-bottom:2px">☀️ LUNCH</div>
-      <div style="font-size:12px;color:#1A1814;margin-bottom:6px">${day.lunch.name} <span style="color:#8A8070">(${day.lunch.cal} cal)</span></div>
+      <div style="font-size:12px;color:#1A1814;margin-bottom:6px">${shown.l.n} <span style="color:#8A8070">(${Math.round(shown.l.c*shown.l.g)} cal)</span></div>
       <div style="font-size:10px;color:#2563EB;font-weight:700;margin-bottom:2px">🌙 DINNER</div>
-      <div style="font-size:12px;color:#1A1814">${day.lunch.name} — half carbs <span style="color:#8A8070">(${day.dinner.cal} cal)</span></div>
-      ${day.soakTonight?`<div style="margin-top:8px;background:#FFF7ED;border-radius:6px;padding:6px 10px;font-size:10px;color:#EA580C;font-weight:700">🫘 Soak tonight: ${day.soakTonight}</div>`:''}
+      <div style="font-size:12px;color:#1A1814">${shown.d.n} <span style="color:#8A8070">(${Math.round(shown.d.c*shown.d.g)} cal)</span></div>
+      ${day.soakTonight&&!noOG?`<div style="margin-top:8px;background:#FFF7ED;border-radius:6px;padding:6px 10px;font-size:10px;color:#EA580C;font-weight:700">🫘 Soak tonight: ${day.soakTonight}</div>`:''}
     </div>`;
   });
 
