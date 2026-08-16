@@ -981,6 +981,36 @@ function getMonthOptions(count) {
   return opts;
 }
 
+function getActiveMonths() {
+  // Only return months where user has actually logged data
+  const d=getData();
+  const dkl=getDKLData().dkl;
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  const currentMk=monthKey();
+
+  // Always include current month
+  const active=new Set([currentMk]);
+
+  // Add months with expense data
+  (d.expenses||[]).forEach(e=>active.add(e.date.slice(0,7)));
+
+  // Add months with card data
+  (d.cardSpend||[]).forEach(e=>active.add(e.date.slice(0,7)));
+
+  // Add months with DKL payment data
+  Object.keys(dkl.payments||{}).forEach(mk=>active.add(mk));
+
+  // Sort descending, max 12
+  return [...active]
+    .sort((a,b)=>b.localeCompare(a))
+    .slice(0,12)
+    .map(key=>{
+      const [yr,mo]=key.split('-').map(Number);
+      return {key, label:months[mo-1]+' '+yr, month:mo-1, year:yr};
+    });
+}
+
 function calcScore(mk) {
   const d = getData();
   const dkl = getDKLData().dkl;
@@ -1060,13 +1090,10 @@ function renderReports() {
   const d=getData();
   const dkl=getDKLData().dkl;
   const tenants=getTenants();
-  const opts=getMonthOptions(12);
+  const opts=getActiveMonths(); // only months with actual data
 
-  // Populate month selector
   const sel=document.getElementById('repMonth');
-  if(sel.options.length===0){
-    sel.innerHTML=opts.map(o=>`<option value="${o.key}">${o.label}</option>`).join('');
-  }
+  sel.innerHTML=opts.map(o=>`<option value="${o.key}">${o.label}</option>`).join('');
   const mk=sel.value||monthKey();
 
   // ── SCORE ──
@@ -1107,9 +1134,18 @@ function renderReports() {
   const spent=monthExp.reduce((s,e)=>s+e.amount,0);
   const diff=budget-spent;
   document.getElementById('repBudget').textContent=fmtF(budget);
-  document.getElementById('repSpent').textContent=fmtF(spent);
-  document.getElementById('repDiff').textContent=(diff>=0?'+':'')+fmtF(diff);
-  document.getElementById('repDiff').style.color=diff>=0?'var(--green)':'var(--red)';
+
+  if(spent===0){
+    document.getElementById('repSpent').textContent='No expenses logged yet';
+    document.getElementById('repSpent').style.color='var(--faint)';
+    document.getElementById('repDiff').textContent='—';
+    document.getElementById('repDiff').style.color='var(--faint)';
+  } else {
+    document.getElementById('repSpent').textContent=fmtF(spent);
+    document.getElementById('repSpent').style.color='var(--ink)';
+    document.getElementById('repDiff').textContent=(diff>=0?'+':'')+fmtF(diff);
+    document.getElementById('repDiff').style.color=diff>=0?'var(--green)':'var(--red)';
+  }
 
   // Category breakdown
   const catT={};
@@ -1156,8 +1192,8 @@ function renderReports() {
     return `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;"><span>${t.name}</span><span style="color:${color};font-weight:700;">${pay.paid>0?fmtF(pay.paid):'—'} ${status}</span></div>`;
   }).join('');
 
-  // ── 6-MONTH TRENDS ──
-  const last6=getMonthOptions(6).reverse();
+  // ── 6-MONTH TRENDS — only show months with data ──
+  const last6=getActiveMonths().slice(0,6).reverse();
   const maxUnion=Math.max(...last6.map(o=>(d.expenses||[]).filter(e=>e.date.startsWith(o.key)).reduce((s,e)=>s+e.amount,0)),budget,1);
   const maxCard=Math.max(...last6.map(o=>{
     const ae=(d.cardSpend||[]).filter(e=>e.card==='axis'&&e.date.startsWith(o.key)).reduce((s,e)=>s+e.amount,0);
@@ -1622,16 +1658,20 @@ function getTenants() {
 }
 
 function dklMonthOptions() {
+  // Show current month + any months with DKL payment data
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const now=new Date();
-  const opts=[];
-  for(let i=0;i<12;i++){
-    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    const label=months[d.getMonth()]+' '+d.getFullYear();
-    opts.push({key,label});
-  }
-  return opts;
+  const dkl=getDKLData().dkl;
+  const active=new Set([monthKey()]);
+  Object.keys(dkl.payments||{}).forEach(mk=>active.add(mk));
+  (dkl.expenses||[]).forEach(e=>active.add(e.date.slice(0,7)));
+
+  return [...active]
+    .sort((a,b)=>b.localeCompare(a))
+    .slice(0,12)
+    .map(key=>{
+      const [yr,mo]=key.split('-').map(Number);
+      return {key, label:months[mo-1]+' '+yr};
+    });
 }
 
 function renderDKL() {
@@ -1867,12 +1907,15 @@ function init() {
   document.getElementById('cDate').value=today();
   document.getElementById('dklExpDate').value=today();
   document.getElementById('dklPayDate').value=today();
-  // Pre-populate report month selector
-  const repSel=document.getElementById('repMonth');
-  const repOpts=getMonthOptions(12);
-  repSel.innerHTML=repOpts.map(o=>`<option value="${o.key}">${o.label}</option>`).join('');
   updateHeader();
   renderHome();
+
+  // Calculate and show real score immediately on load — don't wait for Reports tab
+  const {total} = calcScore(monthKey());
+  const band = getScoreBand(total);
+  document.getElementById('scoreVal').textContent = total;
+  document.getElementById('scoreVal').style.color = band.color;
+  document.querySelector('.score-circle').style.borderColor = band.color;
 }
 
 init();
