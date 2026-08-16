@@ -113,6 +113,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
     <button class="tab" onclick="showTab('budget',this)">📋 Budget</button>
     <button class="tab" onclick="showTab('goals',this)">🎯 Goals</button>
     <button class="tab" onclick="showTab('dkl',this)">🏠 DKL</button>
+    <button class="tab" onclick="showTab('reports',this)">📈 Reports</button>
     <button class="tab" onclick="showTab('settings',this)">⚙️ Settings</button>
   </div>
 </div>
@@ -122,6 +123,10 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
   <!-- HOME -->
   <div id="tab-home">
     <div id="homeAlert" class="alert alert-green">Loading...</div>
+
+    <!-- Warnings panel -->
+    <div id="homeWarnings"></div>
+
     <div class="card" style="text-align:center;">
       <div class="slbl">YOU CAN SPEND TODAY</div>
       <div class="daily-big" id="homeDailyBig">₹0</div>
@@ -332,6 +337,83 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
     </div>
   </div>
 
+  <!-- REPORTS -->
+  <div id="tab-reports" class="hidden">
+    <div class="slbl">MONTHLY REPORT</div>
+
+    <!-- Month selector -->
+    <div class="card">
+      <label class="flbl" style="margin-top:0;">SELECT MONTH</label>
+      <select id="repMonth" onchange="renderReports()"></select>
+    </div>
+
+    <!-- FINANCIAL HEALTH SCORE -->
+    <div class="card" id="scoreCard" style="text-align:center;">
+      <div class="slbl">FINANCIAL HEALTH SCORE</div>
+      <div style="font-size:56px;font-weight:800;margin:8px 0;" id="repScoreVal">—</div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px;" id="repScoreBand">Calculating...</div>
+      <div class="pt" style="height:10px;"><div class="pf" id="repScoreBar" style="height:10px;width:0%;"></div></div>
+      <div style="font-size:9px;color:var(--faint);margin-top:6px;">out of 100 · updates monthly from your data</div>
+    </div>
+
+    <!-- Score breakdown -->
+    <div class="card">
+      <div class="slbl">SCORE BREAKDOWN</div>
+      <div id="scoreBreakdown"></div>
+    </div>
+
+    <!-- Warnings -->
+    <div class="slbl">WARNINGS & ALERTS</div>
+    <div id="repWarnings"></div>
+
+    <!-- Spend summary -->
+    <div class="card">
+      <div class="slbl">UNION SPEND</div>
+      <div class="irow"><div class="irow-lbl">Budget</div><div class="irow-val" id="repBudget">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">Actual Spent</div><div class="irow-val" id="repSpent">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">Surplus / Deficit</div><div class="irow-val" id="repDiff">₹0</div></div>
+      <div style="margin-top:10px;" id="repCatBreak"></div>
+    </div>
+
+    <!-- Card summary -->
+    <div class="card">
+      <div class="slbl">CARD SPEND</div>
+      <div class="irow"><div class="irow-lbl">Axis EMI (fixed)</div><div class="irow-val" id="repAxisEMI">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">Axis extra spend</div><div class="irow-val" id="repAxisExtra">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">ICICI spend</div><div class="irow-val" id="repICICI">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">Total card bills</div><div class="irow-val" id="repCardTotal">₹0</div></div>
+    </div>
+
+    <!-- DKL summary -->
+    <div class="card">
+      <div class="slbl">DHENKANAL (DKL)</div>
+      <div class="irow"><div class="irow-lbl">Expected rent</div><div class="irow-val" id="repDKLExpected">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">Collected</div><div class="irow-val" id="repDKLCollected">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">House expenses</div><div class="irow-val" id="repDKLExp" style="color:var(--red);">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">Net</div><div class="irow-val" id="repDKLNet">₹0</div></div>
+      <div style="margin-top:10px;" id="repTenantBreak"></div>
+    </div>
+
+    <!-- 6 month trend -->
+    <div class="slbl">6-MONTH TREND</div>
+    <div class="card">
+      <div class="slbl" style="color:var(--blue);">UNION SPEND</div>
+      <div id="trendUnion"></div>
+    </div>
+    <div class="card">
+      <div class="slbl" style="color:var(--amber);">CARD BILLS</div>
+      <div id="trendCard"></div>
+    </div>
+    <div class="card">
+      <div class="slbl" style="color:var(--teal);">EMERGENCY FUND</div>
+      <div id="trendEF"></div>
+    </div>
+    <div class="card">
+      <div class="slbl" style="color:var(--green);">DKL NET COLLECTION</div>
+      <div id="trendDKL"></div>
+    </div>
+  </div>
+
   <!-- SETTINGS -->
   <div id="tab-settings" class="hidden">
     <div class="slbl">CORE SETTINGS</div>
@@ -349,8 +431,8 @@ input[type=text],input[type=number],input[type=date],select,textarea{background:
         <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setEFTarget">₹0</span><button class="edit-btn" onclick="editSetting('efTarget','EF Target (₹)','number')">Edit</button></div>
       </div>
       <div class="set-row">
-        <div><div class="set-lbl">Financial Health Score</div><div class="set-sub">Your self-assessment /100</div></div>
-        <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setScore">0</span><button class="edit-btn" onclick="editSetting('score','Health Score (0-100)','number')">Edit</button></div>
+        <div><div class="set-lbl">Financial Health Score</div><div class="set-sub">Auto-calculated monthly from your data</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setScore" style="color:var(--green);">—</span></div>
       </div>
     </div>
 
@@ -634,6 +716,216 @@ function calcSurplus(d) {
   return d.settings.salary - total;
 }
 
+// ─── WARNINGS ENGINE ──────────────────────────────────────
+
+function getWarnings() {
+  const d = getData();
+  const dkl = getDKLData().dkl;
+  const tenants = getTenants();
+  const mk = monthKey();
+  const now = new Date();
+  const union = d.accounts?.union?.balance || 0;
+  const days = daysLeft();
+  const daily = days > 0 ? Math.floor(union / days) : 0;
+  const budget = d.settings.unionBudget || 9700;
+  const salary = d.settings.salary || 93000;
+  const axisEMI = d.settings.axisEMI || 0;
+  const ef = d.accounts?.canara?.balance || 0;
+  const efTarget = d.settings.efTarget || 450000;
+
+  const spent = (d.expenses || []).filter(e => e.date.startsWith(mk)).reduce((s, e) => s + e.amount, 0);
+  const axisExtra = (d.cardSpend || []).filter(e => e.card === 'axis' && e.date.startsWith(mk)).reduce((s, e) => s + e.amount, 0);
+  const iciciExtra = (d.cardSpend || []).filter(e => e.card === 'icici' && e.date.startsWith(mk)).reduce((s, e) => s + e.amount, 0);
+  const totalExtra = axisExtra + iciciExtra;
+
+  const warnings = [];
+
+  // 🔴 CRITICAL
+  if (spent > budget) {
+    warnings.push({
+      sev: 'critical',
+      icon: '🚨',
+      title: 'Over Budget',
+      msg: `Spent ${fmtF(spent)} vs ${fmtF(budget)} budget. Over by ${fmtF(spent - budget)}.`,
+      action: 'Stop all non-essential spending immediately.'
+    });
+  }
+
+  if (daily < 200 && union > 0) {
+    warnings.push({
+      sev: 'critical',
+      icon: '⚠️',
+      title: 'Daily Budget Critical',
+      msg: `Only ₹${daily}/day left for ${days} days. Union balance: ${fmtF(union)}.`,
+      action: 'Cook at home, skip Swiggy, petrol essentials only.'
+    });
+  }
+
+  if (totalExtra > 0) {
+    warnings.push({
+      sev: 'critical',
+      icon: '💳',
+      title: 'Card Rule Broken',
+      msg: `Extra card spend of ${fmtF(totalExtra)} beyond EMI this month.`,
+      action: 'Move remaining spend to Union Bank. No new card transactions.'
+    });
+  }
+
+  // 🟡 WARNING
+  if (ef < (efTarget * 0.05)) {
+    warnings.push({
+      sev: 'warning',
+      icon: '🛡️',
+      title: 'Emergency Fund Critical',
+      msg: `Only ${fmtF(ef)} in Canara — less than 5% of ${fmtF(efTarget)} target.`,
+      action: 'Prioritise Canara transfer before any discretionary spend.'
+    });
+  }
+
+  const hasELSS = (d.budgetItems || []).some(i => i.name.toLowerCase().includes('elss') && i.amt > 0);
+  if (!hasELSS) {
+    warnings.push({
+      sev: 'warning',
+      icon: '📈',
+      title: 'ELSS Not Running',
+      msg: 'Quant ELSS not found in budget. Tax saving at risk.',
+      action: 'Re-add ELSS ₹2,000 in Budget tab immediately.'
+    });
+  }
+
+  // Check DKL fund — warn if no payments logged this month
+  const monthPay = dkl.payments?.[mk] || {};
+  const collected = tenants.reduce((s, t) => s + (monthPay[t.id]?.paid || 0), 0);
+  const expectedTotal = tenants.reduce((s, t) => s + t.rent, 0);
+  if (collected === 0 && now.getDate() > 10) {
+    warnings.push({
+      sev: 'warning',
+      icon: '🏠',
+      title: 'DKL Rent Not Logged',
+      msg: `No Dhenkanal payments logged for ${monthName()}. Expected ${fmtF(expectedTotal)}.`,
+      action: 'Update DKL tab with this month\'s tenant payments.'
+    });
+  } else if (collected < expectedTotal && now.getDate() > 20) {
+    const pending = expectedTotal - collected;
+    warnings.push({
+      sev: 'warning',
+      icon: '🏠',
+      title: 'DKL Partial Collection',
+      msg: `${fmtF(pending)} still pending from tenants this month.`,
+      action: 'Follow up with tenants. Log payments in DKL tab.'
+    });
+  }
+
+  // 🟠 CAUTION
+  if (totalExtra > 0 && totalExtra < 5000) {
+    // Already critical above if > 0, skip
+  }
+
+  if (daily >= 200 && daily < 350) {
+    warnings.push({
+      sev: 'caution',
+      icon: '⚡',
+      title: 'Budget Running Tight',
+      msg: `₹${daily}/day remaining. ${days} days left in ${monthName()}.`,
+      action: 'Avoid eating out. Keep spending lean this week.'
+    });
+  }
+
+  // LIC premium warning — due in Jan and July
+  const month = now.getMonth() + 1;
+  const daysInMonth2 = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysLeft2 = daysInMonth2 - now.getDate();
+  if ((month === 6 && daysLeft2 <= 30) || (month === 12 && daysLeft2 <= 30)) {
+    warnings.push({
+      sev: 'caution',
+      icon: '📋',
+      title: 'LIC Premium Due Soon',
+      msg: `₹5,000 LIC premium due in ${month === 6 ? 'July' : 'January'}. Set aside from next salary.`,
+      action: 'Keep ₹5,000 aside when salary lands.'
+    });
+  }
+
+  // Axis RD maturity approaching — March 2027
+  const renoDate = new Date('2027-03-01');
+  const daysToReno = Math.floor((renoDate - now) / (1000 * 60 * 60 * 24));
+  if (daysToReno <= 60 && daysToReno > 0) {
+    warnings.push({
+      sev: 'caution',
+      icon: '🏠',
+      title: 'Axis RD Matures Soon',
+      msg: `Axis RD matures in ~${daysToReno} days. Renovation fund ready.`,
+      action: 'Plan renovation timeline. Get contractor quotes.'
+    });
+  }
+
+  // 💡 OPPORTUNITY
+  const novDate = new Date('2026-11-01');
+  const daysToNov = Math.floor((novDate - now) / (1000 * 60 * 60 * 24));
+  if (daysToNov <= 45 && daysToNov > 0) {
+    warnings.push({
+      sev: 'opportunity',
+      icon: '🎉',
+      title: 'Personal Loan Ending Soon',
+      msg: `Loan ends in ~${daysToNov} days. ₹16,000/month about to be freed.`,
+      action: 'Pre-assign: ₹10K → Canara EF, ₹2.5K → SIP top-up, ₹1.25K → Health insurance, ₹2.25K → buffer.'
+    });
+  }
+
+  if (daysToNov <= 0 && axisEMI > 0) {
+    warnings.push({
+      sev: 'opportunity',
+      icon: '🎉',
+      title: 'Personal Loan Ended — Update Settings',
+      msg: 'Set Axis Card EMI to ₹0 in Settings. ₹16,000/month is now free.',
+      action: 'Go to ⚙️ Settings → Card EMIs → Axis → set to ₹0.'
+    });
+  }
+
+  const efPct = ef / efTarget;
+  if (efPct >= 0.5 && efPct < 0.55) {
+    warnings.push({
+      sev: 'opportunity',
+      icon: '🌟',
+      title: 'Halfway to Emergency Fund!',
+      msg: `${fmtF(ef)} — you\'ve crossed 50% of the ₹4.5L target.`,
+      action: 'Keep the Canara transfer consistent. Target: Early 2028.'
+    });
+  }
+
+  return warnings;
+}
+
+function renderWarnings(containerId) {
+  const warnings = getWarnings();
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  if (warnings.length === 0) {
+    el.innerHTML = '<div class="alert alert-green">✅ All clear — no warnings this month. Stay consistent.</div>';
+    return;
+  }
+
+  const sevConfig = {
+    critical:    { bg:'#FEF0ED', color:'#E8402A', border:'#E8402A' },
+    warning:     { bg:'#FFFBEB', color:'#D97706', border:'#D97706' },
+    caution:     { bg:'#EFF6FF', color:'#2563EB', border:'#2563EB' },
+    opportunity: { bg:'#EDF7F2', color:'#2A9D5C', border:'#2A9D5C' }
+  };
+
+  el.innerHTML = warnings.map(w => {
+    const c = sevConfig[w.sev];
+    return `
+      <div style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:800;color:${c.color};">${w.icon} ${w.title}</div>
+        <div style="font-size:11px;color:#1A1814;margin-top:4px;">${w.msg}</div>
+        <div style="font-size:10px;color:${c.color};margin-top:4px;font-weight:700;">→ ${w.action}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── END WARNINGS ─────────────────────────────────────────
+
 function updateHeader() {
   const d=getData();
   const a=d.accounts;
@@ -648,7 +940,13 @@ function updateHeader() {
   document.getElementById('hUnion').textContent=fmt(union);
   document.getElementById('hEF').textContent=fmt(ef);
   document.getElementById('hSurplus').textContent=fmt(surplus);
-  document.getElementById('scoreVal').textContent=d.settings.score;
+
+  // Auto-calculate score for current month
+  const {total} = calcScore(monthKey());
+  const band = getScoreBand(total);
+  document.getElementById('scoreVal').textContent = total;
+  document.getElementById('scoreVal').style.color = band.color;
+  document.querySelector('.score-circle').style.borderColor = band.color;
 }
 
 function showTab(name,btn) {
@@ -666,7 +964,243 @@ function renderTab(name) {
   else if(name==='card') renderCard();
   else if(name==='budget') renderBudget();
   else if(name==='dkl') renderDKL();
+  else if(name==='reports') renderReports();
   else if(name==='settings') renderSettings();
+}
+
+function getMonthOptions(count) {
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();
+  const opts=[];
+  for(let i=0;i<count;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const label=months[d.getMonth()]+' '+d.getFullYear();
+    opts.push({key,label,month:d.getMonth(),year:d.getFullYear()});
+  }
+  return opts;
+}
+
+function calcScore(mk) {
+  const d = getData();
+  const dkl = getDKLData().dkl;
+  const tenants = getTenants();
+  const salary = d.settings.salary || 93000;
+  const budget = d.settings.unionBudget || 9700;
+  const efTarget = d.settings.efTarget || 450000;
+  const ef = d.accounts?.canara?.balance || 0;
+  const axisEMI = d.settings.axisEMI || 0;
+  const mbaEMI = 6375;
+
+  const scores = [];
+
+  // 1. Emergency Fund — 20 pts
+  const efPct = Math.min(1, ef / efTarget);
+  const efScore = Math.round(efPct * 20);
+  scores.push({ label:'🛡️ Emergency Fund', score:efScore, max:20, detail:`${fmtF(ef)} of ${fmtF(efTarget)} (${(efPct*100).toFixed(1)}%)` });
+
+  // 2. Budget Discipline — 20 pts
+  const spent = (d.expenses||[]).filter(e=>e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  let budgetScore;
+  if (spent === 0) budgetScore = 10;
+  else if (spent <= budget) budgetScore = Math.round(14 + ((budget - spent) / budget) * 6);
+  else budgetScore = Math.max(0, Math.round(20 - ((spent - budget) / budget) * 20));
+  scores.push({ label:'💸 Budget Discipline', score:Math.min(20,budgetScore), max:20, detail:`Spent ${fmtF(spent)} vs ${fmtF(budget)} budget` });
+
+  // 3. Card Discipline — 15 pts
+  const axisExtra = (d.cardSpend||[]).filter(e=>e.card==='axis'&&e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  const iciciExtra = (d.cardSpend||[]).filter(e=>e.card==='icici'&&e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  const totalExtra = axisExtra + iciciExtra;
+  const cardScore = totalExtra === 0 ? 15 : Math.max(0, Math.round(15 - (totalExtra/salary)*150));
+  scores.push({ label:'💳 Card Discipline', score:Math.min(15,cardScore), max:15, detail:totalExtra===0?'No extra card spend ✅':`Extra spend: ${fmtF(totalExtra)}` });
+
+  // 4. Debt Load — 15 pts
+  const totalEMI = axisEMI + mbaEMI;
+  const debtRatio = totalEMI / salary;
+  const debtScore = debtRatio<=0.20?15:debtRatio<=0.30?12:debtRatio<=0.40?8:debtRatio<=0.50?4:0;
+  scores.push({ label:'⚖️ Debt Load', score:debtScore, max:15, detail:`EMIs ${fmtF(totalEMI)} = ${(debtRatio*100).toFixed(0)}% of salary` });
+
+  // 5. Investment Running — 15 pts (increased from 10)
+  const hasELSS = (d.budgetItems||[]).some(i=>i.name.toLowerCase().includes('elss')&&i.amt>0);
+  const hasSIP = (d.budgetItems||[]).some(i=>(i.name.toLowerCase().includes('sip')||i.name.toLowerCase().includes('etf'))&&i.amt>0);
+  const hasRD = (d.budgetItems||[]).some(i=>i.name.toLowerCase().includes('rd')&&i.amt>0);
+  const investScore = (hasELSS?5:0)+(hasSIP?5:0)+(hasRD?5:0);
+  scores.push({ label:'📈 Investments Running', score:investScore, max:15, detail:`ELSS ${hasELSS?'✅':'❌'} · SIP/ETF ${hasSIP?'✅':'❌'} · RD ${hasRD?'✅':'❌'}` });
+
+  // 6. Monthly Surplus — 10 pts (increased from 5)
+  const totalBudget = (d.budgetItems||[]).reduce((s,i)=>s+i.amt,0);
+  const surplus = salary - totalBudget;
+  const surplusRatio = surplus / salary;
+  const surplusScore = surplusRatio>=0.10?10:surplusRatio>=0.07?8:surplusRatio>=0.05?6:surplusRatio>=0.02?3:surplusRatio>=0?1:0;
+  scores.push({ label:'💰 Monthly Surplus', score:surplusScore, max:10, detail:`Surplus ${fmtF(Math.max(0,surplus))} (${(surplusRatio*100).toFixed(0)}% of salary)` });
+
+  // 7. DKL Fund Growth — 5 pts (outcome focused, not collection rate)
+  const dklBalance = dkl.balance || 0;
+  const prevMk = (() => { const d2=new Date(); d2.setMonth(d2.getMonth()-1); return d2.getFullYear()+'-'+String(d2.getMonth()+1).padStart(2,'0'); })();
+  const prevBalance = dkl.balanceHistory?.[prevMk] || 0;
+  let dklScore;
+  if (prevBalance === 0) dklScore = 3; // no history yet
+  else if (dklBalance > prevBalance) dklScore = 5;
+  else if (dklBalance === prevBalance) dklScore = 2;
+  else dklScore = 0;
+  scores.push({ label:'🏠 DKL Fund Growth', score:dklScore, max:5, detail:prevBalance>0?`${fmtF(prevBalance)} → ${fmtF(dklBalance)}`:'Update balance monthly to track growth' });
+
+  const total = scores.reduce((s,x)=>s+x.score,0);
+  return { total, scores };
+}
+
+function getScoreBand(score) {
+  if (score >= 80) return { label: '🟢 Excellent', color: 'var(--green)' };
+  if (score >= 60) return { label: '🟡 Good — Improving', color: 'var(--amber)' };
+  if (score >= 40) return { label: '🟠 Fair — Needs Attention', color: '#EA580C' };
+  return { label: '🔴 Critical', color: 'var(--red)' };
+}
+
+function renderReports() {
+  const d=getData();
+  const dkl=getDKLData().dkl;
+  const tenants=getTenants();
+  const opts=getMonthOptions(12);
+
+  // Populate month selector
+  const sel=document.getElementById('repMonth');
+  if(sel.options.length===0){
+    sel.innerHTML=opts.map(o=>`<option value="${o.key}">${o.label}</option>`).join('');
+  }
+  const mk=sel.value||monthKey();
+
+  // ── SCORE ──
+  const {total, scores} = calcScore(mk);
+  const band = getScoreBand(total);
+  document.getElementById('repScoreVal').textContent = total;
+  document.getElementById('repScoreVal').style.color = band.color;
+  document.getElementById('repScoreBand').textContent = band.label;
+  document.getElementById('repScoreBand').style.color = band.color;
+  document.getElementById('repScoreBar').style.width = total + '%';
+  document.getElementById('repScoreBar').style.background = band.color;
+
+  // Update header score circle too
+  document.getElementById('scoreVal').textContent = total;
+  document.getElementById('scoreVal').style.color = band.color;
+  document.querySelector('.score-circle').style.borderColor = band.color;
+  document.getElementById('setScore').textContent = total + '/100';
+  document.getElementById('setScore').style.color = band.color;
+
+  document.getElementById('scoreBreakdown').innerHTML = scores.map(s => {
+    const pct = Math.round((s.score / s.max) * 100);
+    const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+    return `
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <span style="font-size:11px;font-weight:700;">${s.label}</span>
+          <span style="font-size:11px;font-weight:800;color:${color};">${s.score}/${s.max}</span>
+        </div>
+        <div class="pt" style="margin:3px 0;"><div class="pf" style="background:${color};width:${Math.max(2,pct)}%"></div></div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;">${s.detail}</div>
+      </div>
+    `;
+  }).join('');
+
+  // ── UNION SPEND ──
+  const budget=d.settings.unionBudget||9700;
+  const monthExp=(d.expenses||[]).filter(e=>e.date.startsWith(mk));
+  const spent=monthExp.reduce((s,e)=>s+e.amount,0);
+  const diff=budget-spent;
+  document.getElementById('repBudget').textContent=fmtF(budget);
+  document.getElementById('repSpent').textContent=fmtF(spent);
+  document.getElementById('repDiff').textContent=(diff>=0?'+':'')+fmtF(diff);
+  document.getElementById('repDiff').style.color=diff>=0?'var(--green)':'var(--red)';
+
+  // Category breakdown
+  const catT={};
+  const catBudgets=d.settings.catBudgets||DEF.settings.catBudgets;
+  monthExp.forEach(e=>{catT[e.category]=(catT[e.category]||0)+e.amount;});
+  document.getElementById('repCatBreak').innerHTML=Object.entries(CAT_LABELS).map(([key,label])=>{
+    const s=catT[key]||0;
+    const b=catBudgets[key]||0;
+    const pct=b>0?Math.min(100,(s/b)*100):0;
+    const color=pct>90?'var(--red)':pct>70?'var(--amber)':'var(--green)';
+    return `<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:10px;">${label}</span><span style="font-size:10px;font-weight:700;">${fmtF(s)} / ${fmtF(b)}</span></div><div class="pt" style="margin:3px 0;"><div class="pf" style="background:${color};width:${pct}%"></div></div></div>`;
+  }).join('');
+
+  // ── CARD SPEND ──
+  const axisEMI=d.settings.axisEMI||0;
+  const axisExtra=(d.cardSpend||[]).filter(e=>e.card==='axis'&&e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  const iciciSpend=(d.cardSpend||[]).filter(e=>e.card==='icici'&&e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  document.getElementById('repAxisEMI').textContent=fmtF(axisEMI);
+  document.getElementById('repAxisExtra').textContent=fmtF(axisExtra);
+  document.getElementById('repAxisExtra').style.color=axisExtra>0?'var(--red)':'var(--green)';
+  document.getElementById('repICICI').textContent=fmtF(iciciSpend);
+  document.getElementById('repCardTotal').textContent=fmtF(axisEMI+axisExtra+iciciSpend);
+
+  // ── DKL ──
+  const expectedTotal=tenants.reduce((s,t)=>s+t.rent,0);
+  const monthPay=dkl.payments?.[mk]||{};
+  let collected=0;
+  tenants.forEach(t=>{collected+=(monthPay[t.id]?.paid||0);});
+  const dklExp=(dkl.expenses||[]).filter(e=>e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  const dklNet=collected-dklExp;
+  document.getElementById('repDKLExpected').textContent=fmtF(expectedTotal);
+  document.getElementById('repDKLCollected').textContent=fmtF(collected);
+  document.getElementById('repDKLCollected').style.color=collected>=expectedTotal?'var(--green)':'var(--amber)';
+  document.getElementById('repDKLExp').textContent=fmtF(dklExp);
+  document.getElementById('repDKLNet').textContent=fmtF(dklNet);
+  document.getElementById('repDKLNet').style.color=dklNet>=0?'var(--green)':'var(--red)';
+
+  // Tenant breakdown
+  document.getElementById('repTenantBreak').innerHTML=tenants.map(t=>{
+    const pay=monthPay[t.id]||{paid:0,note:''};
+    const diff2=pay.paid-t.rent;
+    const color=pay.paid===0?'var(--faint)':diff2===0?'var(--green)':diff2>0?'var(--blue)':'var(--amber)';
+    const status=pay.paid===0?'Unpaid':diff2===0?'✅':diff2>0?'💰 Adv':'⚠️ Part';
+    return `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;"><span>${t.name}</span><span style="color:${color};font-weight:700;">${pay.paid>0?fmtF(pay.paid):'—'} ${status}</span></div>`;
+  }).join('');
+
+  // ── 6-MONTH TRENDS ──
+  const last6=getMonthOptions(6).reverse();
+  const maxUnion=Math.max(...last6.map(o=>(d.expenses||[]).filter(e=>e.date.startsWith(o.key)).reduce((s,e)=>s+e.amount,0)),budget,1);
+  const maxCard=Math.max(...last6.map(o=>{
+    const ae=(d.cardSpend||[]).filter(e=>e.card==='axis'&&e.date.startsWith(o.key)).reduce((s,e)=>s+e.amount,0);
+    const ie=(d.cardSpend||[]).filter(e=>e.card==='icici'&&e.date.startsWith(o.key)).reduce((s,e)=>s+e.amount,0);
+    return axisEMI+ae+ie;
+  }),1);
+
+  function trendBar(val,max,color,label,sub){
+    const pct=Math.max(2,Math.min(100,(val/max)*100));
+    return `<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:10px;">${label}</span><span style="font-size:10px;font-weight:700;">${fmtF(val)}${sub?'<span style="font-size:8px;color:var(--muted);"> '+sub+'</span>':''}</span></div><div class="pt" style="margin:3px 0;"><div class="pf" style="background:${color};width:${pct}%"></div></div></div>`;
+  }
+
+  const months2=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('trendUnion').innerHTML=last6.map(o=>{
+    const s=(d.expenses||[]).filter(e=>e.date.startsWith(o.key)).reduce((s2,e)=>s2+e.amount,0);
+    const over=s>budget;
+    return trendBar(s,maxUnion,over?'var(--red)':'var(--blue)',months2[o.month],over?'OVER':'');
+  }).join('');
+
+  document.getElementById('trendCard').innerHTML=last6.map(o=>{
+    const ae=(d.cardSpend||[]).filter(e=>e.card==='axis'&&e.date.startsWith(o.key)).reduce((s,e)=>s+e.amount,0);
+    const ie=(d.cardSpend||[]).filter(e=>e.card==='icici'&&e.date.startsWith(o.key)).reduce((s,e)=>s+e.amount,0);
+    const total=axisEMI+ae+ie;
+    return trendBar(total,maxCard,'var(--amber)',months2[o.month],'');
+  }).join('');
+
+  // EF trend — use account balance history if available, else just show current
+  document.getElementById('trendEF').innerHTML=`<div style="font-size:11px;color:var(--muted);padding:8px 0;">Update Canara balance monthly to track growth here.<br><br>Current: <strong>${fmtF(d.accounts?.canara?.balance||0)}</strong> of <strong>${fmtF(d.settings.efTarget||450000)}</strong> target.</div>`;
+
+  const maxDKL=Math.max(...last6.map(o=>{
+    const p=dkl.payments?.[o.key]||{};
+    return tenants.reduce((s,t)=>s+(p[t.id]?.paid||0),0);
+  }),expectedTotal,1);
+
+  document.getElementById('trendDKL').innerHTML=last6.map(o=>{
+    const p=dkl.payments?.[o.key]||{};
+    const c=tenants.reduce((s,t)=>s+(p[t.id]?.paid||0),0);
+    const e2=(dkl.expenses||[]).filter(e=>e.date.startsWith(o.key)).reduce((s,e)=>s+e.amount,0);
+    const net2=c-e2;
+    return trendBar(Math.max(0,net2),maxDKL,'var(--green)',months2[o.month],c<expectedTotal?'⚠️ partial':'');
+  }).join('');
+  // Warnings
+  renderWarnings('repWarnings');
 }
 
 function populateCatSelect(id) {
@@ -688,10 +1222,22 @@ function renderHome() {
   const efPct=Math.min(100,(ef/efT)*100);
   const budget=d.settings.unionBudget||9700;
 
-  const alert=document.getElementById('homeAlert');
-  if(union<500){alert.className='alert alert-red';alert.textContent='🚨 Union almost empty! Only ₹'+union+' left. Stop spending.';}
-  else if(daily<200){alert.className='alert alert-amber';alert.textContent='⚡ Only ₹'+daily+'/day left. Very tight this month.';}
-  else{alert.className='alert alert-green';alert.textContent='✅ On track · ₹'+daily+'/day · Surplus '+fmtF(calcSurplus(d))+'/ month';}
+  const alertEl=document.getElementById('homeAlert');
+  const warnings=getWarnings();
+  const criticals=warnings.filter(w=>w.sev==='critical');
+  const warningsList=warnings.filter(w=>w.sev==='warning');
+  const {total:scoreNow}=calcScore(mk);
+  if(criticals.length>0){
+    alertEl.className='alert alert-red';
+    alertEl.textContent=`🚨 ${criticals.length} critical issue${criticals.length>1?'s':''} — check warnings below`;
+  } else if(warningsList.length>0){
+    alertEl.className='alert alert-amber';
+    alertEl.textContent=`⚠️ ${warningsList.length} warning${warningsList.length>1?'s':''} — review below`;
+  } else {
+    alertEl.className='alert alert-green';
+    alertEl.textContent=`✅ Score ${scoreNow}/100 · ₹${daily}/day · Surplus ${fmtF(calcSurplus(d))}/month`;
+  }
+  renderWarnings('homeWarnings');
 
   const dailyColor=daily<200?'var(--red)':daily<400?'var(--amber)':'var(--green)';
   document.getElementById('homeDailyBig').textContent='₹'+daily;
@@ -1243,10 +1789,15 @@ function saveDKLBalance() {
   const val=parseFloat(document.getElementById('dklBalInput').value);
   if(isNaN(val)) return alert('Enter valid balance');
   const d=getDKLData();
+  // Save previous balance to history before updating
+  if(!d.dkl.balanceHistory) d.dkl.balanceHistory={};
+  const prevMk=(()=>{const d2=new Date();d2.setMonth(d2.getMonth()-1);return d2.getFullYear()+'-'+String(d2.getMonth()+1).padStart(2,'0');})();
+  if(d.dkl.balance) d.dkl.balanceHistory[prevMk]=d.dkl.balance;
   d.dkl.balance=val;
   save(d);
   document.getElementById('dklBalInput').value='';
   renderDKL();
+  updateHeader();
 }
 
 function showDKLPayModal(tenantId,tenantName,mk) {
@@ -1316,6 +1867,10 @@ function init() {
   document.getElementById('cDate').value=today();
   document.getElementById('dklExpDate').value=today();
   document.getElementById('dklPayDate').value=today();
+  // Pre-populate report month selector
+  const repSel=document.getElementById('repMonth');
+  const repOpts=getMonthOptions(12);
+  repSel.innerHTML=repOpts.map(o=>`<option value="${o.key}">${o.label}</option>`).join('');
   updateHeader();
   renderHome();
 }
