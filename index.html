@@ -305,21 +305,36 @@ const NOOG_LIB = {
     {name:"Moong Dal Chilla + Curd",c:1.5,g:220},
   ],
   main: [
-    {name:"Jeera Aloo + Curd Rice",c:1.5,g:380},
-    {name:"Moong Dal Khichdi + Ghee + Papad",c:1.6,g:380},
-    {name:"Aloo Jeera (no onion-garlic) + Chapati + Dal",c:1.4,g:370},
-    {name:"Bhindi Fry (no onion-garlic) + Dal + Rice",c:1.5,g:380},
-    {name:"Curd Rice + Papad + Pickle",c:1.3,g:360},
-    {name:"Sabudana Khichdi (heavier) + Curd",c:1.6,g:360},
-    {name:"Santula + Rice (Odia — traditionally no onion-garlic)",c:1.4,g:400},
-    {name:"Dalma + Rice (Odia — traditionally no onion-garlic)",c:1.5,g:400},
+    {name:"Jeera Aloo + Curd Rice",veg:["potato"],c:1.5,g:380},
+    {name:"Moong Dal Khichdi + Ghee + Papad",veg:[],c:1.6,g:380},
+    {name:"Aloo Jeera (no onion-garlic) + Chapati + Dal",veg:["potato"],c:1.4,g:370},
+    {name:"Bhindi Fry (no onion-garlic) + Dal + Rice",veg:["bhindi"],c:1.5,g:380},
+    {name:"Curd Rice + Papad + Pickle",veg:[],c:1.3,g:360},
+    {name:"Sabudana Khichdi (heavier) + Curd",veg:[],c:1.6,g:360},
+    {name:"Santula + Rice (Odia — traditionally no onion-garlic)",veg:["potato","raw_banana","brinjal","raw_papaya","cauliflower","parwal"],minVeg:2,c:1.4,g:400},
+    {name:"Dalma + Rice (Odia — traditionally no onion-garlic)",veg:["potato","raw_banana","brinjal","raw_papaya"],minVeg:1,c:1.5,g:400},
+    {name:"Mushroom Sabzi (no onion-garlic) + Chapati + Dal",veg:["mushroom"],c:1.4,g:380},
+    {name:"Cabbage Poriyal (tempered, no onion-garlic) + Rice + Dal",veg:["cabbage"],c:1.4,g:400},
+    {name:"Carrot Peas Poriyal + Chapati + Dal",veg:["carrot","peas"],c:1.4,g:380},
   ],
 };
 function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h;}
 function noOGMealsFor(dateKeyStr){
+  const fd=getFridgeData();
+  const availableVeg=fd.veg||[];
   const h=hashStr(dateKeyStr);
   const b=NOOG_LIB.breakfast[h%NOOG_LIB.breakfast.length];
-  const m=NOOG_LIB.main[Math.floor(h/7)%NOOG_LIB.main.length];
+
+  // Prefer dishes whose veg is actually in the fridge; veg-free dishes (curd rice, khichdi) are always eligible
+  const eligible=NOOG_LIB.main.filter(m=>{
+    if(!m.veg||m.veg.length===0) return true;
+    const needed=m.veg.filter(v=>availableVeg.includes(v));
+    const meetsMin=!m.minVeg||needed.length>=m.minVeg;
+    return needed.length>0&&meetsMin;
+  });
+  const pool = eligible.length ? eligible : NOOG_LIB.main.filter(m=>!m.veg||m.veg.length===0);
+  const finalPool = pool.length ? pool : NOOG_LIB.main;
+  const m=finalPool[Math.floor(h/7)%finalPool.length];
   return {
     b:{n:b.name,c:b.c,g:b.g},
     l:{n:m.name,c:m.c,g:m.g},
