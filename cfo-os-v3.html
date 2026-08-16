@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CFO OS">
+<title>Sumesh · CFO OS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#F7F5F0;--card:#FFF;--border:#EDE9E0;--ink:#1A1814;
+  --muted:#8A8070;--faint:#C5BFB0;
+  --red:#E8402A;--red-lt:#FEF0ED;
+  --green:#2A9D5C;--green-lt:#EDF7F2;
+  --amber:#D97706;--amber-lt:#FFFBEB;
+  --blue:#2563EB;--blue-lt:#EFF6FF;
+  --purple:#7C3AED;--purple-lt:#F5F3FF;
+  --teal:#0D9488;--teal-lt:#F0FDFA;
+}
+body{background:var(--bg);color:var(--ink);font-family:'Courier New',monospace;max-width:430px;margin:0 auto;min-height:100vh;}
+.hdr{background:#fff;padding:14px 16px 0;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,0.05);}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.hdr-lbl{font-size:9px;letter-spacing:4px;color:var(--red);font-weight:700;margin-bottom:2px;}
+.hdr-date{font-size:15px;font-weight:700;}
+.score-circle{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:3px solid var(--green);}
+.score-val{font-size:14px;font-weight:800;color:var(--green);line-height:1;}
+.stats{display:flex;gap:4px;margin-bottom:10px;overflow-x:auto;}
+.stat{flex:1;min-width:48px;background:var(--bg);border-radius:8px;padding:6px 2px;text-align:center;border:1px solid var(--border);}
+.sv{font-size:10px;font-weight:700;}
+.sl{font-size:7px;color:var(--faint);letter-spacing:1px;margin-top:1px;}
+.tabs{display:flex;overflow-x:auto;margin:0 -16px;padding:0 16px;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{padding:9px 9px;border:none;background:transparent;font-size:9px;letter-spacing:1px;font-family:inherit;cursor:pointer;white-space:nowrap;font-weight:400;color:var(--faint);border-bottom:2.5px solid transparent;}
+.tab.active{color:var(--red);border-bottom-color:var(--red);font-weight:700;}
+.content{padding:14px 16px 100px;}
+.hidden{display:none!important;}
+.slbl{font-size:9px;letter-spacing:3px;color:var(--faint);margin-bottom:8px;font-weight:700;}
+.card{background:var(--card);border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);border:1px solid var(--border);margin-bottom:10px;}
+.irow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.irow:last-child{border-bottom:none;}
+.irow-lbl{font-size:12px;flex:1;}
+.irow-val{font-size:12px;font-weight:700;flex-shrink:0;}
+input[type=text],input[type=number],input[type=date],select,textarea{background:#fff;border:1.5px solid var(--border);color:var(--ink);padding:10px 12px;border-radius:8px;font-size:14px;font-family:inherit;width:100%;-webkit-appearance:none;appearance:none;outline:none;display:block;margin-bottom:8px;}
+.btn{width:100%;border:none;border-radius:10px;color:#fff;padding:13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:1px;margin-top:4px;}
+.btn-red{background:var(--red);}
+.btn-green{background:var(--green);}
+.btn-blue{background:var(--blue);}
+.btn-sm{padding:7px 12px;border-radius:8px;border:none;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;color:#fff;}
+.btn-outline{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-size:10px;cursor:pointer;font-family:inherit;color:var(--muted);font-weight:700;}
+.flbl{font-size:9px;color:var(--faint);margin-bottom:4px;letter-spacing:1px;display:block;margin-top:6px;}
+.pill{font-size:9px;padding:3px 8px;border-radius:20px;font-weight:700;display:inline-block;}
+.pt{border-radius:6px;height:7px;background:var(--border);margin:6px 0;}
+.pf{height:7px;border-radius:6px;transition:width 0.4s;}
+.bbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-top:1px solid var(--border);padding:8px 20px;text-align:center;}
+.exp-row{display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);}
+.exp-row:last-child{border-bottom:none;}
+.exp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.del-btn{background:none;border:none;color:var(--faint);cursor:pointer;font-size:13px;padding:3px;flex-shrink:0;}
+.alert{padding:10px 14px;border-radius:10px;font-size:11px;margin-bottom:10px;font-weight:700;line-height:1.5;}
+.alert-red{background:var(--red-lt);color:var(--red);}
+.alert-green{background:var(--green-lt);color:var(--green);}
+.alert-amber{background:var(--amber-lt);color:var(--amber);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.mini-card{background:var(--card);border-radius:10px;padding:10px 12px;border:1px solid var(--border);}
+.mini-val{font-size:17px;font-weight:800;margin:3px 0;}
+.mini-lbl{font-size:8px;letter-spacing:2px;color:var(--faint);}
+.mini-sub{font-size:9px;color:var(--muted);margin-top:2px;}
+.daily-big{font-size:44px;font-weight:800;text-align:center;letter-spacing:2px;margin:6px 0;}
+.edit-inline{display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.edit-inline.show{display:block;}
+.set-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.set-row:last-child{border-bottom:none;}
+.set-lbl{font-size:12px;flex:1;}
+.set-sub{font-size:9px;color:var(--muted);margin-top:2px;}
+.set-val{font-size:13px;font-weight:700;color:var(--blue);margin-right:8px;}
+.edit-btn{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:9px;font-family:inherit;cursor:pointer;color:var(--muted);font-weight:700;}
+.budget-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+.budget-row:last-child{border-bottom:none;}
+.cat-badge{font-size:8px;padding:2px 6px;border-radius:10px;font-weight:700;}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-end;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:430px;max-height:80vh;overflow-y:auto;}
+.modal-title{font-size:14px;font-weight:700;margin-bottom:14px;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-lbl">SUMESH · CFO OS</div>
+      <div class="hdr-date" id="hDate"></div>
+    </div>
+    <div style="text-align:center;">
+      <div class="score-circle"><div class="score-val" id="scoreVal">61</div></div>
+      <div style="font-size:7px;color:var(--faint);letter-spacing:1px;margin-top:3px;">HEALTH</div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="sv" id="hLiquid">₹0</div><div class="sl">LIQUID</div></div>
+    <div class="stat"><div class="sv" id="hDaily">₹0</div><div class="sl">₹/DAY</div></div>
+    <div class="stat"><div class="sv" id="hUnion">₹0</div><div class="sl">UNION</div></div>
+    <div class="stat"><div class="sv" id="hEF">₹0</div><div class="sl">EMERG</div></div>
+    <div class="stat"><div class="sv" id="hSurplus">₹0</div><div class="sl">SURPLUS</div></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('home',this)">📊 Home</button>
+    <button class="tab" onclick="showTab('accounts',this)">🏦 Accounts</button>
+    <button class="tab" onclick="showTab('expenses',this)">💸 Spend</button>
+    <button class="tab" onclick="showTab('card',this)">💳 Cards</button>
+    <button class="tab" onclick="showTab('budget',this)">📋 Budget</button>
+    <button class="tab" onclick="showTab('goals',this)">🎯 Goals</button>
+    <button class="tab" onclick="showTab('settings',this)">⚙️ Settings</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- HOME -->
+  <div id="tab-home">
+    <div id="homeAlert" class="alert alert-green">Loading...</div>
+    <div class="card" style="text-align:center;">
+      <div class="slbl">YOU CAN SPEND TODAY</div>
+      <div class="daily-big" id="homeDailyBig">₹0</div>
+      <div style="font-size:10px;color:var(--muted);" id="homeDailySub"></div>
+    </div>
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-lbl">UNION BALANCE</div>
+        <div class="mini-val" id="homeUnion" style="color:var(--green);">₹0</div>
+        <div class="mini-sub">Daily budget account</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-lbl">DAYS LEFT</div>
+        <div class="mini-val" id="homeDays" style="color:var(--blue);">0</div>
+        <div class="mini-sub" id="homeMonth">in month</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-lbl">SPENT THIS MONTH</div>
+        <div class="mini-val" id="homeSpent" style="color:var(--red);">₹0</div>
+        <div class="mini-sub" id="homeSpentSub">of budget</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-lbl">EMERGENCY FUND</div>
+        <div class="mini-val" id="homeEF" style="color:var(--teal);">₹0</div>
+        <div class="mini-sub" id="homeEFSub">of target</div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div class="slbl" style="margin:0;">EMERGENCY FUND</div>
+        <span class="pill" id="efPill" style="background:var(--amber-lt);color:var(--amber);">0%</span>
+      </div>
+      <div class="pt"><div class="pf" id="efBar" style="background:var(--teal);width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--faint);margin-top:3px;">
+        <span id="efAmt">₹0</span>
+        <span id="efTarget">Target ₹4,50,000</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="slbl">QUICK LOG (UNION)</div>
+      <label class="flbl" style="margin-top:0;">AMOUNT (₹)</label>
+      <input type="number" id="qAmt" placeholder="0" inputmode="decimal">
+      <label class="flbl">CATEGORY</label>
+      <select id="qCat"></select>
+      <label class="flbl">NOTE</label>
+      <input type="text" id="qNote" placeholder="optional">
+      <button class="btn btn-red" onclick="logQuick()">+ LOG EXPENSE</button>
+    </div>
+    <div class="card">
+      <div class="slbl">RECENT</div>
+      <div id="homeRecent"></div>
+    </div>
+  </div>
+
+  <!-- ACCOUNTS -->
+  <div id="tab-accounts" class="hidden">
+    <div class="slbl">TAP EDIT TO UPDATE BALANCE</div>
+    <div id="accCards"></div>
+    <div class="card" style="background:var(--green-lt);border-color:rgba(42,157,92,0.3);">
+      <div class="slbl" style="color:var(--green);">NET WORTH SNAPSHOT</div>
+      <div class="irow"><div class="irow-lbl">Liquid (excl. Canara)</div><div class="irow-val" id="nwLiquid">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">Emergency Fund</div><div class="irow-val" id="nwEF">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">MF + Stocks</div><div class="irow-val" id="nwPortfolio">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">RDs (accumulated)</div><div class="irow-val" id="nwRD">₹0</div></div>
+      <div class="irow" style="border:none;"><div style="font-size:13px;font-weight:800;">Total Net Worth</div><div style="font-size:13px;font-weight:800;color:var(--green);" id="nwTotal">₹0</div></div>
+    </div>
+    <div class="slbl">LIABILITIES</div>
+    <div class="card">
+      <div class="irow"><div><div class="irow-lbl">Personal Loan (Axis Card)</div><div style="font-size:9px;color:var(--green);">🎉 Ends November 2026</div></div><div class="irow-val" style="color:var(--red);">~₹48K</div></div>
+      <div class="irow"><div><div class="irow-lbl">MBA Loan</div><div style="font-size:9px;color:var(--muted);">Ends July 2028</div></div><div class="irow-val" style="color:var(--red);">~₹1.53L</div></div>
+      <div class="irow"><div><div class="irow-lbl">Axis Card</div></div><div class="irow-val" style="color:var(--green);" id="axisCardOutstanding">₹0</div></div>
+      <div class="irow"><div><div class="irow-lbl">ICICI Card</div></div><div class="irow-val" style="color:var(--green);" id="iciciCardOutstanding">₹0</div></div>
+    </div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div id="tab-expenses" class="hidden">
+    <div class="card" style="text-align:center;background:var(--blue-lt);border-color:rgba(37,99,235,0.2);">
+      <div class="slbl" style="color:var(--blue);">DAILY BUDGET</div>
+      <div style="font-size:36px;font-weight:800;color:var(--blue);" id="expDaily">₹0</div>
+      <div style="font-size:10px;color:var(--muted);" id="expDailySub"></div>
+    </div>
+    <div class="card">
+      <div class="slbl">LOG UNION SPEND</div>
+      <label class="flbl" style="margin-top:0;">AMOUNT (₹)</label>
+      <input type="number" id="eAmt" placeholder="0" inputmode="decimal">
+      <label class="flbl">CATEGORY</label>
+      <select id="eCat"></select>
+      <label class="flbl">DATE</label>
+      <input type="date" id="eDate">
+      <label class="flbl">NOTE</label>
+      <input type="text" id="eNote" placeholder="optional">
+      <button class="btn btn-red" onclick="logExp()">+ LOG</button>
+    </div>
+    <div class="card">
+      <div class="slbl">THIS MONTH BY CATEGORY</div>
+      <div id="catBreak"></div>
+    </div>
+    <div class="slbl">ALL ENTRIES</div>
+    <div class="card"><div id="allExp"></div></div>
+  </div>
+
+  <!-- CARDS -->
+  <div id="tab-card" class="hidden">
+    <div class="alert alert-amber">⚠️ Rule: Cards = EMIs + genuine unavoidable spend only. Track every rupee.</div>
+    <div class="grid2">
+      <div class="mini-card" style="border-color:var(--amber);">
+        <div class="mini-lbl">AXIS CARD BILL</div>
+        <div class="mini-val" id="axisTotal" style="color:var(--amber);">₹0</div>
+        <div class="mini-sub">EMI + spend logged</div>
+      </div>
+      <div class="mini-card" style="border-color:var(--blue);">
+        <div class="mini-lbl">ICICI CARD BILL</div>
+        <div class="mini-val" id="iciciTotal" style="color:var(--blue);">₹0</div>
+        <div class="mini-sub">Pay in full</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="irow"><div class="irow-lbl">Axis fixed EMI</div><div class="irow-val" style="color:var(--amber);" id="axisEMIDisplay">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">Axis extra spend</div><div class="irow-val" id="axisExtra" style="color:var(--green);">₹0</div></div>
+      <div class="irow"><div class="irow-lbl">ICICI spend (pay in full)</div><div class="irow-val" id="iciciSpend" style="color:var(--blue);">₹0</div></div>
+      <div class="irow" style="border:none;"><div style="font-size:13px;font-weight:800;">Total card bills</div><div style="font-size:13px;font-weight:800;color:var(--red);" id="totalCards">₹0</div></div>
+    </div>
+    <div class="card">
+      <div class="slbl">LOG CARD SPEND</div>
+      <label class="flbl" style="margin-top:0;">AMOUNT (₹)</label>
+      <input type="number" id="cAmt" placeholder="0" inputmode="decimal">
+      <label class="flbl">CARD</label>
+      <select id="cCard">
+        <option value="axis">Axis Card</option>
+        <option value="icici">ICICI Card</option>
+      </select>
+      <label class="flbl">DATE</label>
+      <input type="date" id="cDate">
+      <label class="flbl">NOTE (what was this for?)</label>
+      <input type="text" id="cNote" placeholder="be specific">
+      <button class="btn btn-red" onclick="logCard()">+ LOG CARD SPEND</button>
+    </div>
+    <div class="slbl">CARD ENTRIES THIS MONTH</div>
+    <div class="card"><div id="cardEntries"></div></div>
+  </div>
+
+  <!-- BUDGET -->
+  <div id="tab-budget" class="hidden">
+    <div class="slbl">MONTHLY BUDGET <span style="color:var(--blue);cursor:pointer;" onclick="showAddBudget()">+ ADD</span></div>
+
+    <div class="card">
+      <div class="slbl">FIXED OBLIGATIONS</div>
+      <div id="budgetFixed"></div>
+    </div>
+    <div class="card">
+      <div class="slbl">SAVINGS & INVESTMENTS</div>
+      <div id="budgetInvest"></div>
+    </div>
+    <div class="card">
+      <div class="slbl">LIVING EXPENSES</div>
+      <div id="budgetLiving"></div>
+    </div>
+
+    <div class="card" style="background:var(--green-lt);border-color:rgba(42,157,92,0.3);">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div class="slbl" style="color:var(--green);margin:0;">MONTHLY SURPLUS</div>
+          <div style="font-size:28px;font-weight:800;color:var(--green);" id="budgetSurplus">₹0</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:var(--muted);" id="budgetSalaryDisplay"></div>
+          <div style="font-size:10px;color:var(--muted);" id="budgetTotalDisplay"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slbl">MONTHLY TRANSFERS (1st)</div>
+    <div class="card">
+      <div class="irow"><div><div class="irow-lbl">ICICI → Axis</div><div style="font-size:9px;color:var(--muted);">RD cover</div></div><div class="irow-val" style="color:var(--blue);">₹7,000</div></div>
+      <div class="irow"><div><div class="irow-lbl">ICICI → Union</div><div style="font-size:9px;color:var(--muted);">Living budget</div></div><div class="irow-val" style="color:var(--blue);" id="unionTransfer">₹0</div></div>
+      <div class="irow"><div><div class="irow-lbl">ICICI → Canara</div><div style="font-size:9px;color:var(--muted);">Emergency fund</div></div><div class="irow-val" style="color:var(--blue);">₹5,000</div></div>
+      <div class="irow"><div><div class="irow-lbl">ICICI → HDFC</div><div style="font-size:9px;color:var(--muted);">Quarterly SIP</div></div><div class="irow-val" style="color:var(--blue);">₹2,000</div></div>
+    </div>
+  </div>
+
+  <!-- GOALS -->
+  <div id="tab-goals" class="hidden">
+    <div class="card" style="background:var(--red-lt);border-color:rgba(232,64,42,0.3);">
+      <div style="font-size:9px;letter-spacing:2px;color:var(--red);font-weight:700;margin-bottom:6px;">🔴 GOLDEN RULES</div>
+      <div class="irow"><div class="irow-lbl">Rental income → Dhenkanal only</div><div>🔒</div></div>
+      <div class="irow"><div class="irow-lbl">Canara → Emergency fund only</div><div>🔒</div></div>
+      <div class="irow"><div class="irow-lbl">Union → Living expenses only</div><div>🔒</div></div>
+      <div class="irow"><div class="irow-lbl">Cards → EMI + unavoidable only</div><div>🔒</div></div>
+      <div class="irow"><div class="irow-lbl">Nov 2026 → Pre-assign ₹16K</div><div>🔒</div></div>
+    </div>
+    <div class="card">
+      <div class="slbl">2026</div>
+      <div class="irow"><div><div class="irow-lbl">📈 Stock ETFs Resume</div><div style="font-size:9px;color:var(--green);">₹2,500/month</div></div><div class="pill" style="background:var(--green-lt);color:var(--green);">AUG ✅</div></div>
+      <div class="irow"><div><div class="irow-lbl">📊 HDFC SIP Resumes</div><div style="font-size:9px;color:var(--muted);">₹6,700 — one fund</div></div><div class="pill" style="background:var(--amber-lt);color:var(--amber);">SEP</div></div>
+      <div class="irow"><div><div class="irow-lbl">💰 Q2 Bonus ₹20,000</div><div style="font-size:9px;color:var(--muted);">→ Emergency fund</div></div><div class="pill" style="background:var(--amber-lt);color:var(--amber);">OCT</div></div>
+      <div class="irow"><div><div class="irow-lbl">🎉 Personal Loan ENDS</div><div style="font-size:9px;color:var(--green);">+₹16,000/month freed!</div></div><div class="pill" style="background:var(--green-lt);color:var(--green);">NOV</div></div>
+      <div class="irow"><div><div class="irow-lbl">🏥 Health Insurance</div><div style="font-size:9px;color:var(--muted);">Family floater ~₹1,250</div></div><div class="pill" style="background:var(--blue-lt);color:var(--blue);">NOV</div></div>
+    </div>
+    <div class="card">
+      <div class="slbl">2027</div>
+      <div class="irow"><div><div class="irow-lbl">🏠 Axis RD Matures</div><div style="font-size:9px;color:var(--muted);">₹1,09,000 → Renovation</div></div><div class="pill" style="background:var(--blue-lt);color:var(--blue);">MAR</div></div>
+      <div class="irow"><div><div class="irow-lbl">🔨 Dhenkanal Renovation</div><div style="font-size:9px;color:var(--muted);">Phase 1 begins</div></div><div class="pill" style="background:var(--blue-lt);color:var(--blue);">APR</div></div>
+    </div>
+    <div class="card">
+      <div class="slbl">2028</div>
+      <div class="irow"><div><div class="irow-lbl">🎓 MBA EMI ENDS</div><div style="font-size:9px;color:var(--green);">+₹6,375/month freed</div></div><div class="pill" style="background:var(--green-lt);color:var(--green);">JUL</div></div>
+      <div class="irow"><div><div class="irow-lbl">🛡️ Emergency Fund ₹4.5L ✅</div><div style="font-size:9px;color:var(--green);">Target complete</div></div><div class="pill" style="background:var(--green-lt);color:var(--green);">EARLY</div></div>
+    </div>
+    <div class="card">
+      <div class="slbl">DREAMS 🌟</div>
+      <div class="irow"><div><div class="irow-lbl">🏍️ Royal Enfield / KTM</div><div style="font-size:9px;color:var(--muted);">You've earned it</div></div><div class="pill" style="background:var(--purple-lt);color:var(--purple);">2028-29</div></div>
+      <div class="irow"><div><div class="irow-lbl">🏠 House Purchase</div><div style="font-size:9px;color:var(--muted);">Down payment ready</div></div><div class="pill" style="background:var(--purple-lt);color:var(--purple);">2029-30</div></div>
+      <div class="irow"><div><div class="irow-lbl">🌄 Ladakh Again</div><div style="font-size:9px;color:var(--muted);">On your own terms</div></div><div class="pill" style="background:var(--purple-lt);color:var(--purple);">SOON</div></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="tab-settings" class="hidden">
+    <div class="slbl">CORE SETTINGS</div>
+    <div class="card">
+      <div class="set-row">
+        <div><div class="set-lbl">Monthly Salary</div><div class="set-sub">Take-home after tax</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setSalary">₹0</span><button class="edit-btn" onclick="editSetting('salary','Monthly Salary (₹)','number')">Edit</button></div>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Union Monthly Budget</div><div class="set-sub">Total living expense cap</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setUnionBudget">₹0</span><button class="edit-btn" onclick="editSetting('unionBudget','Union Budget (₹)','number')">Edit</button></div>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Emergency Fund Target</div><div class="set-sub">6 months expenses</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setEFTarget">₹0</span><button class="edit-btn" onclick="editSetting('efTarget','EF Target (₹)','number')">Edit</button></div>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">Financial Health Score</div><div class="set-sub">Your self-assessment /100</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setScore">0</span><button class="edit-btn" onclick="editSetting('score','Health Score (0-100)','number')">Edit</button></div>
+      </div>
+    </div>
+
+    <div class="slbl">CARD EMIs</div>
+    <div class="card">
+      <div class="set-row">
+        <div><div class="set-lbl">Axis Card Fixed EMI</div><div class="set-sub">Personal loan — set ₹0 in Nov 2026</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setAxisEMI">₹0</span><button class="edit-btn" onclick="editSetting('axisEMI','Axis EMI (₹)','number')">Edit</button></div>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">ICICI Card Fixed EMI</div><div class="set-sub">₹0 if pay-in-full card</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setIciciEMI">₹0</span><button class="edit-btn" onclick="editSetting('iciciEMI','ICICI EMI (₹)','number')">Edit</button></div>
+      </div>
+    </div>
+
+    <div class="slbl">CATEGORY BUDGETS (UNION)</div>
+    <div class="card" id="catSettings"></div>
+
+    <div class="slbl">PORTFOLIO VALUES (UPDATE FROM GROWW)</div>
+    <div class="card">
+      <div class="set-row">
+        <div><div class="set-lbl">MF + Stocks Value</div><div class="set-sub">Current market value</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setPortfolio">₹0</span><button class="edit-btn" onclick="editSetting('portfolio','Portfolio Value (₹)','number')">Edit</button></div>
+      </div>
+      <div class="set-row">
+        <div><div class="set-lbl">RDs Accumulated</div><div class="set-sub">Total across all RDs</div></div>
+        <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setRD">₹0</span><button class="edit-btn" onclick="editSetting('rdValue','RD Accumulated (₹)','number')">Edit</button></div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;">
+      <button class="btn btn-outline" style="color:var(--red);border-color:var(--red);" onclick="resetAll()">🗑 Reset All Data</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Budget Modal -->
+<div class="modal-overlay" id="budgetModal">
+  <div class="modal">
+    <div class="modal-title" id="budgetModalTitle">ADD BUDGET ITEM</div>
+    <label class="flbl" style="margin-top:0;">ITEM NAME</label>
+    <input type="text" id="bName" placeholder="e.g. Health Insurance">
+    <label class="flbl">AMOUNT (₹)</label>
+    <input type="number" id="bAmt" placeholder="0">
+    <label class="flbl">CATEGORY</label>
+    <select id="bCat">
+      <option value="fixed">Fixed Obligation</option>
+      <option value="invest">Savings & Investment</option>
+      <option value="living">Living Expense</option>
+    </select>
+    <label class="flbl">NOTE (optional)</label>
+    <input type="text" id="bNote" placeholder="e.g. Ends Nov 2026">
+    <input type="hidden" id="bEditId">
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-green" style="flex:1;" onclick="saveBudgetItem()">SAVE</button>
+      <button class="btn" style="flex:1;background:var(--faint);" onclick="closeBudgetModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Setting Edit Modal -->
+<div class="modal-overlay" id="settingModal">
+  <div class="modal">
+    <div class="modal-title" id="settingModalTitle">EDIT</div>
+    <label class="flbl" style="margin-top:0;" id="settingModalLabel">VALUE</label>
+    <input id="settingModalInput" placeholder="0">
+    <input type="hidden" id="settingModalKey">
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn btn-blue" style="flex:1;" onclick="saveSetting()">SAVE</button>
+      <button class="btn" style="flex:1;background:var(--faint);" onclick="closeSettingModal()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div class="bbar">
+  <div style="font-size:9px;color:var(--faint);letter-spacing:2px;">SUMESH · CFO OS · v3</div>
+</div>
+
+<script>
+const SK = 'sumesh_cfo_v3';
+
+// Default data
+const DEF = {
+  settings: {
+    salary: 93000,
+    unionBudget: 9700,
+    efTarget: 450000,
+    score: 61,
+    axisEMI: 16000,
+    iciciEMI: 0,
+    portfolio: 197763,
+    rdValue: 225000,
+    catBudgets: { food:2000, petrol:1200, groceries:3000, misc:3500 }
+  },
+  accounts: {
+    icici: { name:'ICICI', label:'Operating', balance:97000, color:'#2563EB', emoji:'🏦', minBal:0 },
+    axis:  { name:'Axis',  label:'RD + Buffer', balance:43000, color:'#D97706', emoji:'💰', minBal:25000 },
+    union: { name:'Union', label:'Daily Budget', balance:3000, color:'#2A9D5C', emoji:'💳', minBal:0 },
+    hdfc:  { name:'HDFC',  label:'SIP Accumulation', balance:2000, color:'#7C3AED', emoji:'📈', minBal:0 },
+    canara:{ name:'Canara',label:'Emergency Fund 🔒', balance:71000, color:'#0D9488', emoji:'🛡️', minBal:0 }
+  },
+  budgetItems: [
+    {id:1,name:'Rent',amt:17200,cat:'fixed',note:''},
+    {id:2,name:'Maintenance BLR',amt:2400,cat:'fixed',note:''},
+    {id:3,name:'BBSR Household',amt:8192,cat:'fixed',note:'expense+maint+wifi+elec'},
+    {id:4,name:'MBA EMI',amt:6375,cat:'fixed',note:'Ends July 2028'},
+    {id:5,name:'Axis EMI (Card)',amt:16000,cat:'fixed',note:'Ends November 2026 🎉'},
+    {id:6,name:'Term Insurance',amt:2300,cat:'fixed',note:'₹1.5Cr cover'},
+    {id:7,name:'LIC Premium',amt:833,cat:'fixed',note:'Half-yearly ₹5K'},
+    {id:8,name:'Axis RD',amt:7000,cat:'invest',note:'→ Renovation Mar 2027'},
+    {id:9,name:'ICICI RD',amt:2000,cat:'invest',note:'Matures 2028'},
+    {id:10,name:'Canara RD',amt:1000,cat:'invest',note:'Matures ~2028'},
+    {id:11,name:'Quant ELSS',amt:2000,cat:'invest',note:'Tax saving 80C'},
+    {id:12,name:'HDFC SIP',amt:6700,cat:'invest',note:'Resumes September ⏸️'},
+    {id:13,name:'Stock ETFs',amt:2500,cat:'invest',note:'4 instruments from Aug'},
+    {id:14,name:'HDFC Accumulation',amt:2000,cat:'invest',note:'Quarterly SIP fund'},
+    {id:15,name:'Emergency Fund',amt:5000,cat:'invest',note:'→ Canara Bank'},
+    {id:16,name:'Living Expenses',amt:9700,cat:'living',note:'Union Bank budget'}
+  ],
+  expenses: [],
+  cardSpend: []
+};
+
+const CAT_LABELS = { food:'🍽️ Food/Swiggy', petrol:'⛽ Petrol', groceries:'🛒 Groceries', misc:'📦 Misc' };
+const CAT_COLORS = { food:'#E8402A', petrol:'#D97706', groceries:'#2A9D5C', misc:'#7C3AED' };
+const CARD_COLORS = { axis:'#D97706', icici:'#2563EB' };
+const BADGE_STYLES = {
+  fixed: 'background:#FEF0ED;color:#E8402A;',
+  invest: 'background:#EDF7F2;color:#2A9D5C;',
+  living: 'background:#EFF6FF;color:#2563EB;'
+};
+const BADGE_LABELS = { fixed:'FIXED', invest:'INVEST', living:'LIVING' };
+
+function load() { try{const d=localStorage.getItem(SK);return d?JSON.parse(d):null;}catch(e){return null;} }
+function save(d) { try{localStorage.setItem(SK,JSON.stringify(d));}catch(e){} }
+function getData() {
+  const d=load();
+  if(!d){save(JSON.parse(JSON.stringify(DEF)));return JSON.parse(JSON.stringify(DEF));}
+  if(!d.cardSpend) d.cardSpend=[];
+  if(!d.settings.catBudgets) d.settings.catBudgets=DEF.settings.catBudgets;
+  return d;
+}
+
+function fmt(n) {
+  if(n>=100000) return '₹'+(n/100000).toFixed(1)+'L';
+  if(n>=1000) return '₹'+(n/1000).toFixed(1)+'K';
+  return '₹'+Math.round(n).toLocaleString('en-IN');
+}
+function fmtF(n) { return '₹'+Math.round(n).toLocaleString('en-IN'); }
+function today() { return new Date().toISOString().slice(0,10); }
+function monthKey() { return new Date().toISOString().slice(0,7); }
+function daysLeft() {
+  const n=new Date();
+  const last=new Date(n.getFullYear(),n.getMonth()+1,0).getDate();
+  return last-n.getDate()+1;
+}
+function monthName() {
+  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date().getMonth()];
+}
+
+function calcSurplus(d) {
+  const total=d.budgetItems.reduce((s,i)=>s+i.amt,0);
+  return d.settings.salary - total;
+}
+
+function updateHeader() {
+  const d=getData();
+  const a=d.accounts;
+  const liquid=(a.icici?.balance||0)+Math.max(0,(a.axis?.balance||0)-(a.axis?.minBal||0))+(a.union?.balance||0)+(a.hdfc?.balance||0);
+  const union=a.union?.balance||0;
+  const days=daysLeft();
+  const daily=days>0?Math.floor(union/days):0;
+  const ef=a.canara?.balance||0;
+  const surplus=calcSurplus(d);
+  document.getElementById('hLiquid').textContent=fmt(liquid);
+  document.getElementById('hDaily').textContent=fmt(daily);
+  document.getElementById('hUnion').textContent=fmt(union);
+  document.getElementById('hEF').textContent=fmt(ef);
+  document.getElementById('hSurplus').textContent=fmt(surplus);
+  document.getElementById('scoreVal').textContent=d.settings.score;
+}
+
+function showTab(name,btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.classList.add('hidden'));
+  document.getElementById('tab-'+name).classList.remove('hidden');
+  btn.classList.add('active');
+  renderTab(name);
+}
+
+function renderTab(name) {
+  if(name==='home') renderHome();
+  else if(name==='accounts') renderAccounts();
+  else if(name==='expenses') renderExpenses();
+  else if(name==='card') renderCard();
+  else if(name==='budget') renderBudget();
+  else if(name==='settings') renderSettings();
+}
+
+function populateCatSelect(id) {
+  const d=getData();
+  const sel=document.getElementById(id);
+  if(!sel) return;
+  sel.innerHTML=Object.entries(CAT_LABELS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+}
+
+function renderHome() {
+  const d=getData();
+  const mk=monthKey();
+  const monthExp=(d.expenses||[]).filter(e=>e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  const union=d.accounts.union?.balance||0;
+  const days=daysLeft();
+  const daily=days>0?Math.floor(union/days):0;
+  const ef=d.accounts.canara?.balance||0;
+  const efT=d.settings.efTarget||450000;
+  const efPct=Math.min(100,(ef/efT)*100);
+  const budget=d.settings.unionBudget||9700;
+
+  const alert=document.getElementById('homeAlert');
+  if(union<500){alert.className='alert alert-red';alert.textContent='🚨 Union almost empty! Only ₹'+union+' left. Stop spending.';}
+  else if(daily<200){alert.className='alert alert-amber';alert.textContent='⚡ Only ₹'+daily+'/day left. Very tight this month.';}
+  else{alert.className='alert alert-green';alert.textContent='✅ On track · ₹'+daily+'/day · Surplus '+fmtF(calcSurplus(d))+'/ month';}
+
+  const dailyColor=daily<200?'var(--red)':daily<400?'var(--amber)':'var(--green)';
+  document.getElementById('homeDailyBig').textContent='₹'+daily;
+  document.getElementById('homeDailyBig').style.color=dailyColor;
+  document.getElementById('homeDailySub').textContent='Union '+fmtF(union)+' ÷ '+days+' days left in '+monthName();
+  document.getElementById('homeUnion').textContent=fmtF(union);
+  document.getElementById('homeDays').textContent=days;
+  document.getElementById('homeMonth').textContent='days left in '+monthName();
+  document.getElementById('homeSpent').textContent=fmtF(monthExp);
+  document.getElementById('homeSpentSub').textContent='of '+fmtF(budget)+' budget';
+  document.getElementById('homeEF').textContent=fmtF(ef);
+  document.getElementById('homeEFSub').textContent=efPct.toFixed(1)+'% of target';
+  document.getElementById('efPill').textContent=efPct.toFixed(1)+'%';
+  document.getElementById('efBar').style.width=efPct+'%';
+  document.getElementById('efAmt').textContent=fmtF(ef);
+  document.getElementById('efTarget').textContent='Target '+fmtF(efT);
+
+  populateCatSelect('qCat');
+
+  const recent=[...(d.expenses||[])].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const el=document.getElementById('homeRecent');
+  if(recent.length===0){el.innerHTML='<div style="font-size:11px;color:var(--faint);padding:8px 0;">No entries yet.</div>';}
+  else{el.innerHTML=recent.map(e=>`<div class="exp-row"><div class="exp-dot" style="background:${CAT_COLORS[e.category]||'#ccc'};"></div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${CAT_LABELS[e.category]||e.category}</div>${e.note?`<div style="font-size:10px;color:var(--faint);font-style:italic;">${e.note}</div>`:''}<div style="font-size:9px;color:var(--faint);">${e.date}</div></div><div style="font-size:13px;font-weight:700;">${fmtF(e.amount)}</div></div>`).join('');}
+}
+
+function renderAccounts() {
+  const d=getData();
+  const a=d.accounts;
+  const liquid=(a.icici?.balance||0)+Math.max(0,(a.axis?.balance||0)-(a.axis?.minBal||0))+(a.union?.balance||0)+(a.hdfc?.balance||0);
+  const ef=a.canara?.balance||0;
+  const total=liquid+ef+(d.settings.portfolio||0)+(d.settings.rdValue||0);
+
+  document.getElementById('nwLiquid').textContent=fmtF(liquid);
+  document.getElementById('nwEF').textContent=fmtF(ef);
+  document.getElementById('nwPortfolio').textContent=fmtF(d.settings.portfolio||0);
+  document.getElementById('nwRD').textContent=fmtF(d.settings.rdValue||0);
+  document.getElementById('nwTotal').textContent=fmt(total);
+
+  // Card outstanding
+  const mk=monthKey();
+  const axisExtra=(d.cardSpend||[]).filter(e=>e.card==='axis'&&e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  const iciciSpend=(d.cardSpend||[]).filter(e=>e.card==='icici'&&e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  const axisTotal=(d.settings.axisEMI||0)+axisExtra;
+  const iciciTotal=(d.settings.iciciEMI||0)+iciciSpend;
+  document.getElementById('axisCardOutstanding').textContent=axisTotal>0?fmtF(axisTotal)+' due':'₹0 ✅';
+  document.getElementById('axisCardOutstanding').style.color=axisTotal>0?'var(--amber)':'var(--green)';
+  document.getElementById('iciciCardOutstanding').textContent=iciciTotal>0?fmtF(iciciTotal)+' due':'₹0 ✅';
+  document.getElementById('iciciCardOutstanding').style.color=iciciTotal>0?'var(--blue)':'var(--green)';
+
+  const container=document.getElementById('accCards');
+  container.innerHTML=Object.entries(a).map(([key,acc])=>{
+    const usable=acc.minBal>0?Math.max(0,acc.balance-acc.minBal):acc.balance;
+    const usableNote=acc.minBal>0?`<div style="font-size:9px;color:var(--amber);">Usable above ₹${fmtF(acc.minBal)} min: ${fmtF(usable)}</div>`:'';
+    return `<div class="card" style="border-left:4px solid ${acc.color};">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="flex:1;"><div style="font-size:14px;font-weight:700;">${acc.emoji} ${acc.name}</div><div style="font-size:9px;color:var(--muted);margin-top:2px;">${acc.label}</div>${usableNote}</div>
+        <div style="text-align:right;"><div style="font-size:22px;font-weight:800;color:${key==='canara'?'#0D9488':'var(--ink)'};" id="bal-${key}">${fmtF(acc.balance)}</div><button class="edit-btn" onclick="editAccBalance('${key}')">✏️ Edit</button></div>
+      </div>
+      <div class="edit-inline" id="acc-edit-${key}">
+        <input class="flbl" style="display:block;margin-top:8px;" id="acc-inp-${key}" type="number" placeholder="New balance" value="${acc.balance}" style="border:1.5px solid var(--blue);border-radius:8px;padding:8px;font-size:14px;font-family:inherit;width:100%;margin-bottom:6px;">
+        <div style="display:flex;gap:6px;"><button class="btn-sm btn-blue" style="background:var(--blue);" onclick="saveAccBalance('${key}')">SAVE</button><button class="btn-outline" onclick="editAccBalance('${key}')">Cancel</button></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function editAccBalance(key) {
+  const el=document.getElementById('acc-edit-'+key);
+  el.classList.toggle('show');
+  if(el.classList.contains('show')) document.getElementById('acc-inp-'+key).focus();
+}
+
+function saveAccBalance(key) {
+  const val=parseFloat(document.getElementById('acc-inp-'+key).value);
+  if(isNaN(val)) return alert('Enter valid number');
+  const d=getData();
+  d.accounts[key].balance=val;
+  save(d);
+  editAccBalance(key);
+  renderAccounts();
+  updateHeader();
+}
+
+function logQuick() {
+  const amt=parseFloat(document.getElementById('qAmt').value);
+  const cat=document.getElementById('qCat').value;
+  const note=document.getElementById('qNote').value.trim();
+  if(!amt||amt<=0) return alert('Enter valid amount');
+  const d=getData();
+  d.expenses.push({id:Date.now(),date:today(),amount:amt,category:cat,note});
+  d.accounts.union.balance=Math.max(0,(d.accounts.union.balance||0)-amt);
+  save(d);
+  document.getElementById('qAmt').value='';
+  document.getElementById('qNote').value='';
+  updateHeader();
+  renderHome();
+}
+
+function logExp() {
+  const amt=parseFloat(document.getElementById('eAmt').value);
+  const cat=document.getElementById('eCat').value;
+  const date=document.getElementById('eDate').value||today();
+  const note=document.getElementById('eNote').value.trim();
+  if(!amt||amt<=0) return alert('Enter valid amount');
+  const d=getData();
+  d.expenses.push({id:Date.now(),date,amount:amt,category:cat,note});
+  d.accounts.union.balance=Math.max(0,(d.accounts.union.balance||0)-amt);
+  save(d);
+  document.getElementById('eAmt').value='';
+  document.getElementById('eNote').value='';
+  updateHeader();
+  renderExpenses();
+}
+
+function delExp(id) {
+  const d=getData();
+  const e=d.expenses.find(x=>x.id===id);
+  if(e){d.accounts.union.balance=(d.accounts.union.balance||0)+e.amount;d.expenses=d.expenses.filter(x=>x.id!==id);save(d);updateHeader();renderExpenses();}
+}
+
+function renderExpenses() {
+  const d=getData();
+  const mk=monthKey();
+  const monthExps=(d.expenses||[]).filter(e=>e.date.startsWith(mk));
+  const union=d.accounts.union?.balance||0;
+  const days=daysLeft();
+  const daily=days>0?Math.floor(union/days):0;
+  const dailyColor=daily<200?'var(--red)':daily<400?'var(--amber)':'var(--blue)';
+  document.getElementById('expDaily').textContent='₹'+daily;
+  document.getElementById('expDaily').style.color=dailyColor;
+  document.getElementById('expDailySub').textContent='Union '+fmtF(union)+' ÷ '+days+' days left';
+
+  populateCatSelect('eCat');
+
+  const catT={};
+  monthExps.forEach(e=>{catT[e.category]=(catT[e.category]||0)+e.amount;});
+  const catBudgets=d.settings.catBudgets||DEF.settings.catBudgets;
+  document.getElementById('catBreak').innerHTML=Object.entries(CAT_LABELS).map(([key,label])=>{
+    const spent=catT[key]||0;
+    const budget=catBudgets[key]||0;
+    const pct=budget>0?Math.min(100,(spent/budget)*100):0;
+    const color=pct>90?'var(--red)':pct>70?'var(--amber)':'var(--green)';
+    return `<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:11px;">${label}</span><span style="font-size:11px;font-weight:700;">${fmtF(spent)} / ${fmtF(budget)}</span></div><div class="pt"><div class="pf" style="background:${color};width:${pct}%"></div></div></div>`;
+  }).join('');
+
+  const sorted=[...(d.expenses||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('allExp').innerHTML=sorted.length===0?'<div style="font-size:11px;color:var(--faint);padding:8px 0;">No entries yet.</div>':sorted.map(e=>`<div class="exp-row"><div class="exp-dot" style="background:${CAT_COLORS[e.category]||'#ccc'};"></div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${CAT_LABELS[e.category]||e.category}</div>${e.note?`<div style="font-size:10px;color:var(--faint);font-style:italic;">${e.note}</div>`:''}<div style="font-size:9px;color:var(--faint);">${e.date}</div></div><div style="display:flex;align-items:center;gap:4px;"><div style="font-size:13px;font-weight:700;">${fmtF(e.amount)}</div><button class="del-btn" onclick="delExp(${e.id})">🗑</button></div></div>`).join('');
+}
+
+function logCard() {
+  const amt=parseFloat(document.getElementById('cAmt').value);
+  const card=document.getElementById('cCard').value;
+  const date=document.getElementById('cDate').value||today();
+  const note=document.getElementById('cNote').value.trim();
+  if(!amt||amt<=0) return alert('Enter valid amount');
+  const d=getData();
+  d.cardSpend.push({id:Date.now(),date,amount:amt,card,note});
+  save(d);
+  document.getElementById('cAmt').value='';
+  document.getElementById('cNote').value='';
+  renderCard();
+}
+
+function delCard(id) {
+  const d=getData();
+  d.cardSpend=d.cardSpend.filter(e=>e.id!==id);
+  save(d);
+  renderCard();
+}
+
+function renderCard() {
+  const d=getData();
+  const mk=monthKey();
+  const axisEMI=d.settings.axisEMI||0;
+  const iciciEMI=d.settings.iciciEMI||0;
+  const axisExtra=(d.cardSpend||[]).filter(e=>e.card==='axis'&&e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  const iciciSpend=(d.cardSpend||[]).filter(e=>e.card==='icici'&&e.date.startsWith(mk)).reduce((s,e)=>s+e.amount,0);
+  const axisTotal=axisEMI+axisExtra;
+  const iciciTotal=iciciEMI+iciciSpend;
+
+  document.getElementById('axisEMIDisplay').textContent=fmtF(axisEMI);
+  document.getElementById('axisExtra').textContent=fmtF(axisExtra);
+  document.getElementById('axisExtra').style.color=axisExtra>0?'var(--red)':'var(--green)';
+  document.getElementById('iciciSpend').textContent=fmtF(iciciSpend);
+  document.getElementById('axisTotal').textContent=fmtF(axisTotal);
+  document.getElementById('iciciTotal').textContent=fmtF(iciciTotal);
+  document.getElementById('totalCards').textContent=fmtF(axisTotal+iciciTotal);
+
+  const mk2=monthKey();
+  const sorted=[...(d.cardSpend||[])].filter(e=>e.date.startsWith(mk2)).sort((a,b)=>b.date.localeCompare(a.date));
+  const emiLine=axisEMI>0?`<div class="exp-row"><div class="exp-dot" style="background:var(--amber);"></div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">💳 Axis EMI (Personal Loan)</div><div style="font-size:10px;color:var(--faint);">Fixed — set to ₹0 in Nov 2026 via Settings</div></div><div style="font-size:13px;font-weight:700;color:var(--amber);">${fmtF(axisEMI)}</div></div>`:'';
+  const entries=sorted.length===0?'<div style="font-size:11px;color:var(--green);padding:8px 0;">✅ No extra card spend logged.</div>':sorted.map(e=>`<div class="exp-row"><div class="exp-dot" style="background:${CARD_COLORS[e.card]};"></div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">⚠️ ${e.card.toUpperCase()} Card</div>${e.note?`<div style="font-size:10px;color:var(--faint);font-style:italic;">${e.note}</div>`:''}<div style="font-size:9px;color:var(--faint);">${e.date}</div></div><div style="display:flex;align-items:center;gap:4px;"><div style="font-size:13px;font-weight:700;color:var(--red);">${fmtF(e.amount)}</div><button class="del-btn" onclick="delCard(${e.id})">🗑</button></div></div>`).join('');
+  document.getElementById('cardEntries').innerHTML=emiLine+entries;
+}
+
+function renderBudget() {
+  const d=getData();
+  const items=d.budgetItems||[];
+  const fixed=items.filter(i=>i.cat==='fixed');
+  const invest=items.filter(i=>i.cat==='invest');
+  const living=items.filter(i=>i.cat==='living');
+  const total=items.reduce((s,i)=>s+i.amt,0);
+  const surplus=d.settings.salary-total;
+
+  const renderItems=(list,divId)=>{
+    const el=document.getElementById(divId);
+    if(list.length===0){el.innerHTML='<div style="font-size:11px;color:var(--faint);padding:8px 0;">None. Tap + ADD above.</div>';return;}
+    el.innerHTML=list.map(item=>`
+      <div class="budget-row">
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:600;">${item.name}</div>
+          ${item.note?`<div style="font-size:9px;color:var(--muted);">${item.note}</div>`:''}
+        </div>
+        <div style="font-size:13px;font-weight:700;margin-right:8px;">${fmtF(item.amt)}</div>
+        <button class="btn-sm" style="background:var(--blue);margin-right:4px;" onclick="editBudgetItem(${item.id})">✏️</button>
+        <button class="btn-sm" style="background:var(--red);" onclick="delBudgetItem(${item.id})">🗑</button>
+      </div>
+    `).join('');
+  };
+
+  renderItems(fixed,'budgetFixed');
+  renderItems(invest,'budgetInvest');
+  renderItems(living,'budgetLiving');
+
+  document.getElementById('budgetSurplus').textContent=fmtF(surplus);
+  document.getElementById('budgetSurplus').style.color=surplus>=0?'var(--green)':'var(--red)';
+  document.getElementById('budgetSalaryDisplay').textContent='Salary '+fmtF(d.settings.salary);
+  document.getElementById('budgetTotalDisplay').textContent='Committed '+fmtF(total);
+
+  // Union transfer = living total
+  const livingTotal=living.reduce((s,i)=>s+i.amt,0);
+  document.getElementById('unionTransfer').textContent=fmtF(livingTotal);
+}
+
+function showAddBudget() {
+  document.getElementById('bName').value='';
+  document.getElementById('bAmt').value='';
+  document.getElementById('bNote').value='';
+  document.getElementById('bEditId').value='';
+  document.getElementById('budgetModalTitle').textContent='ADD BUDGET ITEM';
+  document.getElementById('budgetModal').classList.add('show');
+}
+
+function editBudgetItem(id) {
+  const d=getData();
+  const item=d.budgetItems.find(i=>i.id===id);
+  if(!item) return;
+  document.getElementById('bName').value=item.name;
+  document.getElementById('bAmt').value=item.amt;
+  document.getElementById('bNote').value=item.note||'';
+  document.getElementById('bCat').value=item.cat;
+  document.getElementById('bEditId').value=id;
+  document.getElementById('budgetModalTitle').textContent='EDIT BUDGET ITEM';
+  document.getElementById('budgetModal').classList.add('show');
+}
+
+function delBudgetItem(id) {
+  if(!confirm('Delete this budget item?')) return;
+  const d=getData();
+  d.budgetItems=d.budgetItems.filter(i=>i.id!==id);
+  save(d);
+  renderBudget();
+  updateHeader();
+}
+
+function saveBudgetItem() {
+  const name=document.getElementById('bName').value.trim();
+  const amt=parseFloat(document.getElementById('bAmt').value);
+  const cat=document.getElementById('bCat').value;
+  const note=document.getElementById('bNote').value.trim();
+  const editId=document.getElementById('bEditId').value;
+  if(!name||!amt) return alert('Enter name and amount');
+  const d=getData();
+  if(editId){
+    const item=d.budgetItems.find(i=>i.id===parseInt(editId));
+    if(item){item.name=name;item.amt=amt;item.cat=cat;item.note=note;}
+  } else {
+    d.budgetItems.push({id:Date.now(),name,amt,cat,note});
+  }
+  save(d);
+  closeBudgetModal();
+  renderBudget();
+  updateHeader();
+}
+
+function closeBudgetModal() { document.getElementById('budgetModal').classList.remove('show'); }
+
+function renderSettings() {
+  const d=getData();
+  const s=d.settings;
+  document.getElementById('setSalary').textContent=fmtF(s.salary);
+  document.getElementById('setUnionBudget').textContent=fmtF(s.unionBudget);
+  document.getElementById('setEFTarget').textContent=fmtF(s.efTarget);
+  document.getElementById('setScore').textContent=s.score;
+  document.getElementById('setAxisEMI').textContent=fmtF(s.axisEMI);
+  document.getElementById('setIciciEMI').textContent=fmtF(s.iciciEMI);
+  document.getElementById('setPortfolio').textContent=fmtF(s.portfolio);
+  document.getElementById('setRD').textContent=fmtF(s.rdValue);
+
+  const catBudgets=s.catBudgets||DEF.settings.catBudgets;
+  document.getElementById('catSettings').innerHTML=Object.entries(CAT_LABELS).map(([key,label])=>`
+    <div class="set-row">
+      <div><div class="set-lbl">${label}</div></div>
+      <div style="display:flex;align-items:center;gap:6px;"><span class="set-val" id="setCat-${key}">${fmtF(catBudgets[key]||0)}</span><button class="edit-btn" onclick="editCatBudget('${key}')">Edit</button></div>
+    </div>
+  `).join('');
+}
+
+function editSetting(key,label,type) {
+  const d=getData();
+  let val=d.settings[key]||0;
+  document.getElementById('settingModalTitle').textContent='EDIT '+label.toUpperCase();
+  document.getElementById('settingModalLabel').textContent=label;
+  const inp=document.getElementById('settingModalInput');
+  inp.type=type||'text';
+  inp.value=val;
+  document.getElementById('settingModalKey').value=key;
+  document.getElementById('settingModal').classList.add('show');
+  setTimeout(()=>inp.focus(),100);
+}
+
+function editCatBudget(catKey) {
+  const d=getData();
+  const val=d.settings.catBudgets?.[catKey]||0;
+  document.getElementById('settingModalTitle').textContent='EDIT '+CAT_LABELS[catKey].toUpperCase();
+  document.getElementById('settingModalLabel').textContent='Budget for '+CAT_LABELS[catKey]+' (₹)';
+  const inp=document.getElementById('settingModalInput');
+  inp.type='number';
+  inp.value=val;
+  document.getElementById('settingModalKey').value='cat_'+catKey;
+  document.getElementById('settingModal').classList.add('show');
+  setTimeout(()=>inp.focus(),100);
+}
+
+function saveSetting() {
+  const key=document.getElementById('settingModalKey').value;
+  const val=document.getElementById('settingModalInput').value;
+  const d=getData();
+  if(key.startsWith('cat_')){
+    const catKey=key.replace('cat_','');
+    if(!d.settings.catBudgets) d.settings.catBudgets={};
+    d.settings.catBudgets[catKey]=parseFloat(val)||0;
+  } else {
+    d.settings[key]=isNaN(parseFloat(val))?val:parseFloat(val);
+  }
+  save(d);
+  closeSettingModal();
+  renderSettings();
+  updateHeader();
+}
+
+function closeSettingModal() { document.getElementById('settingModal').classList.remove('show'); }
+
+function resetAll() {
+  if(!confirm('Reset ALL data? This cannot be undone.')) return;
+  localStorage.removeItem(SK);
+  location.reload();
+}
+
+function init() {
+  const now=new Date();
+  const days2=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months2=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('hDate').textContent=days2[now.getDay()]+', '+now.getDate()+' '+months2[now.getMonth()]+' '+now.getFullYear();
+  document.getElementById('eDate').value=today();
+  document.getElementById('cDate').value=today();
+  updateHeader();
+  renderHome();
+}
+
+init();
+</script>
+</body>
+</html>
